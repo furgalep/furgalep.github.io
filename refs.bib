@@ -1,0 +1,832 @@
+@INPROCEEDINGS{rehder_iros14,
+  annote    = {full-conf-pb},
+  year      =  2014 ,
+  url       = { bib/rehder_iros14.pdf },
+  webimage  = {rehder_iros14.png},
+  title     = { Spatio-Temporal Laser to Visual/Inertial Calibration with Applications
+to Hand-Held, Large Scale Scanning },
+  pages     = { 459--465 },
+  month     = { 14--18 September },
+  booktitle = { Proceedings of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) },
+  author    = { Joern Rehder and Paul Beardsley and Roland Siegwart and Paul Furgale },
+  address   = {  Chicago, IL, USA },
+  abstract  = {This work presents a novel approach to spatio- temporal calibration of a laser range finder (LRF) with respect to a combination of a stereo camera and an inertial measure- ment unit (IMU). Spatial calibration between an LRF and a camera has been extensively studied, but so far the temporal relationship between the two has largely been neglected. While this may be sufficient for applications where the setup is mounted on a vehicle, which imposes bounds on the dynamics, we aim for employment on a hand-held scanning device, where angular velocities can easily exceed hundreds of degrees per second. Employing a continuous-time batch estimation frame- work, this work demonstrates that the transformation between the LRF and the visual/inertial setup—but also its temporal relationship—can be estimated accurately. In contrast to the majority of established calibration approaches, our approach does not require an overlap in the field of view of the LRF and camera, allowing for previously infeasible sensor configurations to be calibrated. Preliminary results for a novel hand-held scanning device suggest improvements in 3D reconstructions and image based point cloud coloring, especially for highly dynamic motions.}
+}
+
+@INPROCEEDINGS{lynen_3dv14,
+  annote    = {full-conf-pb},
+  address   = {Tokyo, Japan},
+  month     = {8 -- 11 December},
+  volume    = 1,
+  author    = {Simon Lynen and Mike Bosse and Paul Furgale and Roland Siegwart },
+  booktitle = {3D Vision (3DV), 2014 2nd International Conference on},
+  doi       = {10.1109/3DV.2014.36},
+  title     = {Placeless Place-Recognition},
+  webimage  = {lynen_3dv14.png},
+  year      = 2014,
+  url       = {bib/lynen_3dv14.pdf},
+  pages     = { 303--310 },
+  abstract  = {Place recognition is a core competency for any visual simultaneous localization and mapping system. Identifying previously visited places enables the creation of globally accurate maps, robust relocalization, and multi-user mapping. To match one place to another, most state-of-the-art approaches must decide a priori what constitutes a place, often in terms of how many consecutive views should overlap, or how many consecutive images should be considered together. Unfortunately, depending on thresholds such as these, limits their generality to different types of scenes. In this paper, we present a placeless place recognition algorithm using a novel vote-density estimation technique that avoids heuristically discretizing the space. Instead, our approach considers place recognition as a problem of continuous matching between image streams, automatically discovering regions of high vote density that represent overlapping trajectory segments. The resulting algorithm has a single free parameter and all remaining thresholds are set automatically using well-studied statistical tests. We demonstrate the efficiency and accuracy of our methodology on three outdoor sequences: A comprehensive evaluation against ground-truth from publicly available datasets shows that our approach outperforms several state-of-the-art algorithms for place recognition.
+}
+}
+
+@ARTICLE{muehlfellner_jfr15,
+  annote   = {journal-ta},
+  title    = {Summary Maps for Lifelong Visual Localization},
+  author   = {Peter M\"{u}hlfellner and Mathias B\"{u}rki and Mike Bosse and Wojciech Derendarz and Roland Philippsen and Paul Furgale},
+  year     = 2015,
+  webimage = {muehlfellner_jfr15.png},
+  journal  = {Journal of Field Robotics},
+  note     = {Conditionally accepted on February 3, 2015. Manuscript \#ROB-14-0150},
+  abstract = {Robots that use vision for localization need to handle environments which are subject to seasonal and structural change, and operate under changing lighting and weather conditions.
+We present a framework for lifelong localization and mapping designed to provide robust and metrically accurate online localization in these kinds of changing environments. 
+Our system iterates between offline map building, map summary, and online localization.
+The offline mapping fuses data from multiple visually varied datasets, thus dealing with changing environments by incorporating new information.
+Before passing this data to the online localization system, the map is summarized, selecting only the landmarks that are deemed useful for localization.
+This Summary Map enables online localization that is accurate and robust to the variation of visual information in natural environments while still being computationally efficient.
+
+We present a number of summary policies for selecting useful features for localization from the multi-session map and explore the tradeoff between localization performance and computational complexity.
+The system is evaluated on 77 recordings, with a total length of 30 kilometers, collected outdoors over sixteen months.
+These datasets cover all seasons, various times of day, and changing weather such as sunshine, rain, fog, and snow.
+We show that it is possible to build consistent maps that span data collected over an entire year, and cover day-to-night transitions.
+Simple statistics computed on landmark observations are enough to produce a Summary Map that enables robust and accurate localization over a wide range of seasonal, lighting, and weather conditions.}
+}
+
+@ARTICLE{leutenegger_ijrr14,
+  annote   = {journal-pb},
+  webimage = {leutenegger_ijrr14.png},
+  author   = {Stefan Leutenegger and Simon Lynen and Michael Bosse and Roland Siegwart and Paul Furgale},
+  title    = {Keyframe-Based Visual-Inertial Odometry Using Nonlinear Optimization},
+  year     = 2014,
+  journal  = {The International Journal of Robotics Research},
+  doi      = {10.1177/0278364914554813},
+  note     = {Early Access},
+  abstract = {Combining visual and inertial measurements has become popular in mobile robotics, since the two sensing modalities offer complementary characteristics that make them the ideal choice for accurate Visual-Inertial Odometry or Simultaneous Localization and Mapping (SLAM). While historically the problem has been addressed with filtering, advancements in visual estimation suggest that non-linear optimization offers superior accuracy, while still tractable in complexity thanks to the sparsity of the underlying problem. Taking inspiration from these findings, we formulate a rigorously probabilistic cost function that combines reprojection errors of landmarks and inertial terms. The problem is kept tractable and thus ensuring real-time operation by limiting the optimization to a bounded window of keyframes through marginalization. Keyframes may be spaced in time by arbitrary intervals, while still related by linearized inertial terms. We present evaluation results on complementary datasets recorded with our custom-built stereo visual-inertial hardware that accurately synchronizes accelerometer and gyroscope measurements with imagery. A comparison of both a stereo and monocular version of our algorithm with and without online extrinsics estimation is shown with respect to ground truth. Furthermore, we compare the performance to an implementation of a state-of-the-art stochasic cloning sliding-window filter. This competititve reference implementation performs tightly-coupled filtering-based visual-inertial odometry. While our approach declaredly demands more computation, we show its superior performance in terms of accuracy.}
+}
+
+@INPROCEEDINGS{furgale_icra14,
+  annote    = {abst-conf-pb},
+  address   = {Hong Kong, China},
+  month     = {May 3 -- June 7},
+  author    = {Paul Furgale and Philipp Kr\"usi and Fran\c{c}ois Pomerleau and Ulrich Schwesinger and Francis Colas and Roland Siegwart},
+  booktitle = {ICRA14 Workshop on Modelling, Estimation, Perception, and Control of All Terrain Mobile Robots},
+  title     = {There and Back Again---Dealing with highly-dynamic scenes and long-term change during topological/metric route following},
+  url       = {bib/furgale_icra14.pdf},
+  youtube   = {cMgLyLpnsoU},
+  note      = {(\href{http://www.youtube.com/watch?v=cMgLyLpnsoU}{video})},
+  abstract  = {Topological/metric route following, also called teach and repeat (T\&R), enables long-range autonomous navigation even without globally consistent localization. This renders T\&R ideal for applications where a global positioning system may not be available, such as navigation through street canyons or forests in search and rescue, reconnaissance in underground structures, surveillance, or planetary exploration. This talk will present our efforts to develop a T\&R system suitable for long-term robot autonomy in highly dynamic, unstructured environments. We use the fast iterative closest point (ICP) algorithms from libpointmatcher1 to build a T\&R system based on a spinning laser range finder. The system deals with dynamic elements in two ways. First, we employ a system- compliant local motion planner to react to dynamic elements in the scene during route following. Second, the system infers the static or dynamic state of each 3D point in the environment based on repeated observations. The velocity of each dynamic point is estimated without requiring object models or explicit clustering of the points. At any time, the system is able to produce a most-likely representation of underlying static scene geometry. By storing the time history of velocities, we can infer the dominant motion patterns within the map. The result is an online mapping and localization system specifically designed to enable long-term autonomy within highly dynamic environments. We validate the approach using data collected around the campus of ETH Zurich over seven months and at an outdoor 3D test site in Thun, Switzerland.},
+  year      = 2014
+}
+
+@ARTICLE{kruesi_jfr14,
+  annote   = {journal-pb},
+  webimage = {kruesi_jfr14.png},
+  author   = {Philipp Kr\"{u}si and Bastian B\"{u}cheler and Fran\c{c}ois Pomerleau and Ulrich Schwesinger and Roland Siegwart and Paul Furgale },
+  title    = {Lighting-Invariant Adaptive Route Following Using Iterative Closest Point Matching},
+  year     = 2014,
+  journal  = {Journal of Field Robotics},
+  youtube  = {UCCAUf64tD0},
+  url      = {bib/kruesi_jfr14.pdf},
+  doi      = {10.1002/rob.21524},
+  note     = {Early Access (\href{http://www.youtube.com/watch?v=UCCAUf64tD0}{video})},
+  abstract = {Topological/metric route following, also called Teach and Repeat (TnR), enables long-range autonomous navigation even without globally consistent localization. In the teach pass, the robot is driven manually and builds up a topological/metric map of the environment: a graph of metric submaps connected by relative transformations. For repeating the route autonomously, the map only needs to be locally consistent; errors on the global level due to localization drift are irrelevant. This renders TnR ideal for applications where a global positioning system may not be available, such as navigation through street canyons or forests in search and rescue, reconnaissance in underground structures, surveillance, or planetary exploration.
+We present a TnR system based on iterative closest point matching (ICP) using data from a spinning 3D laser scanner. Our algorithm is highly accurate, robust to dynamic scenes and extreme changes in the environment, and independent of ambient lighting. It enables autonomous navigation along a taught path in both structured and unstructured environments, including highly 3D terrain. Furthermore, our system is able to detect obstacles and avoid them by adapting its path using a local motion planner. It enables autonomous route following in non-static environments, which is not possible with classical TnR systems.
+We demonstrate our algorithm's performance in two long-range driving experiments, one in a highly dynamic urban environment, the other in unstructured, rough, 3D terrain. In these experiments our robot autonomously drove a distance of over 22 kilometers in both day and night. We analyze the localization accuracy of our system and show that it is highly precise. Moreover, we compare our ICP-based method to a state-of-the-art stereo-vision-based technique and show that our approach has a greatly increased robustness to path deviations and is less dependent on environmental conditions.}
+}
+
+@ARTICLE{barfoot_tro14,
+  annote   = {journal-pb},
+  webimage = {barfoot_tro14.png},
+  doi      = {10.1109/TRO.2014.2298059},
+  month    = jun,
+  volume   = 30,
+  number   = 3,
+  pages    = {679--693},
+  author   = {Tim Barfoot and Paul Furgale},
+  journal  = {Robotics, IEEE Transactions on},
+  codeurl  = {http://asrl.utias.utoronto.ca/code/barfoot_tro14.zip},
+  abstract = {In this paper, we provide specific and practical approaches to associate uncertainty with 4 × 4 transformation matrices, which is a common representation for pose variables in 3-D space. We show constraint-sensitive means of perturbing transformation matrices using their associated exponential-map generators and demonstrate these tools on three simple-yet-important estimation problems: 1) propagating uncertainty through a compound pose change, 2) fusing multiple measurements of a pose(e.g., for use in pose-graph relaxation), and 3) propagating uncertainty on poses (and landmarks) through a nonlinear camera model. The contribution of the paper is the presentation of the theoretical tools, which can be applied in the analysis of many problems involving 3-D pose and point variables.},
+  title    = {Associating Uncertainty with Three-Dimensional Poses for use in Estimation Problems},
+  year     = 2014
+}
+
+@INPROCEEDINGS{heng_icra14,
+  annote    = {full-conf-pb},
+  address   = {Hong Kong, China},
+  month     = {May 3 -- June 7},
+  author    = {Lionel Heng and Mathias B\"{u}rki and Gim Hee Lee and Paul Furgale and Roland Siegwart and Marc Pollefeys},
+  booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+  pages     = {4912--4919},
+  codeurl   = {http://people.inf.ethz.ch/hengli/camodocal/},
+  title     = {Infrastructure-Based Calibration of a Multi-Camera Rig},
+  url       = {bib/heng_icra14.pdf},
+  webimage  = {heng_icra14.png},
+  youtube   = {rMjNLyMu3i0},
+  note      = {(\href{http://www.youtube.com/watch?v=rMjNLyMu3i0}{video}), (\href{http://people.inf.ethz.ch/hengli/camodocal/}{code})},
+  abstract  = {The online recalibration of multi-sensor systems is a fundamental problem that must be solved before complex automated systems are deployed in situations such as automated driving. In such situations, accurate knowledge of calibration parameters is critical for the safe operation of automated systems. However, most existing calibration methods for multi- sensor systems are computationally expensive, use installations of known fiducial patterns, and require expert supervision. We propose an alternative approach called infrastructure-based calibration that is efficient, requires no modification of the infrastructure, and is completely unsupervised. In a survey phase, a computationally expensive simultaneous localization and mapping (SLAM) method is used to build a highly accurate map of a calibration area. Once the map is built, many other vehicles are able to use it for calibration as if it were a known fiducial pattern.
+
+We demonstrate the effectiveness of this method to calibrate the extrinsic parameters of a multi-camera system. The method does not assume that the cameras have an overlapping field of view and it does not require an initial guess. As the camera rig moves through the previously mapped area, we match features between each set of synchronized camera images and the map. Subsequently, we find the camera poses and inlier 2D-3D correspondences. From the camera poses, we obtain an initial estimate of the camera extrinsics and rig poses, and optimize these extrinsics and rig poses via non-linear refinement. The calibration code is publicly available as a standalone C++ package.},
+  year      = 2014
+}
+
+@INPROCEEDINGS{pomerleau_icra14,
+  annote    = {full-conf-pb},
+  address   = {Hong Kong, China},
+  month     = {May 3 -- June 7},
+  author    = {Fran\c{c}ois Pomerleau and Philipp Kr\"{u}si and Francis Colas and Paul Furgale and Roland Siegwart},
+  booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+  pages     = {3712--3719},
+  title     = {Long-term 3D map maintenance in dynamic environments},
+  url       = {bib/pomerleau_icra14.pdf},
+  webimage  = {pomerleau_icra14.png},
+  abstract  = {New applications of mobile robotics in dynamic urban areas require more than the single-session geomet- ric maps that have dominated simultaneous localization and mapping (SLAM) research to date; maps must be updated as the environment changes and include a semantic layer (such as road network information) to aid motion planning in dynamic environments. We present an algorithm for long-term localization and mapping in real time using a three-dimensional (3D) laser scanner. The system infers the static or dynamic state of each 3D point in the environment based on repeated observations. The velocity of each dynamic point is estimated without requiring object models or explicit clustering of the points. At any time, the system is able to produce a most-likely representation of underlying static scene geometry. By storing the time history of velocities, we can infer the dominant motion patterns within the map. The result is an online mapping and localization system specifically designed to enable long-term autonomy within highly dynamic environments. We validate the approach using data collected around the campus of ETH Zurich over seven months and several kilometers of navigation. To the best of our knowledge, this is the first work to unify long-term map update with tracking of dynamic objects.},
+  year      = 2014
+}
+
+@INPROCEEDINGS{kneip_icra14,
+  annote    = {full-conf-pb},
+  address   = {Hong Kong, China},
+  month     = {May 3 -- June 7},
+  author    = {Laurent Kneip and Paul Timothy Furgale},
+  booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+  title     = {OpenGV: A Unified and Generalized Approach to Real-Time Calibrated Geometric Vision},
+  url       = {bib/kneip_icra14.pdf},
+  pages     = {1--8},
+  webimage  = {kneip_icra14.png},
+  note      = {(\href{http://laurentkneip.github.io/opengv/}{code})},
+  codeurl   = {http://laurentkneip.github.io/opengv/},
+  abstract  = {OpenGV is a new C++ library for calibrated real- time 3D geometric vision. It unifies both central and non-central absolute and relative camera pose computation algorithms within a single library. Each problem type comes with minimal and non-minimal closed-form solvers, as well as non-linear iterative optimization and robust sample consensus methods. OpenGV therefore contains an unprecedented level of com- pleteness with regard to calibrated geometric vision algorithms, and it is the first library with a dedicated focus on a unified real-time usage of non-central multi-camera systems, which are increasingly popular in robotics and in the automotive industry. This paper introduces OpenGV’s flexible interface and abstraction for multi-camera systems, and outlines the performance of all contained algorithms. It is our hope that the introduction of this open-source platform will motivate people to use it and potentially also include more algorithms, which would further contribute to the general accessibility of geometric vision algorithms, and build a common playground for the fair comparison of different solutions.},
+  year      = 2014
+}
+
+@INPROCEEDINGS{nikolic_icra14,
+  annote    = {full-conf-pb},
+  address   = {Hong Kong, China},
+  month     = {May 3 -- June 7},
+  pages     = {431--437},
+  author    = {Janosch Nikolic and Joern Rehder and Michael Burri and Pascal Gohl and Stefan Leutenegger and Paul T. Furgale and Roland Siegwart},
+  booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+  title     = {A Synchronized Visual-Inertial Sensor System with FPGA Pre-Processing for Accurate Real-Time SLAM},
+  url       = {bib/nikolic_icra14.pdf},
+  webimage  = {nikolic_icra14.png},
+  abstract  = {Robust, accurate pose estimation and mapping at real-time in six dimensions is a primary need of mobile robots, in particular flying Micro Aerial Vehicles (MAVs), which still perform their impressive maneuvers mostly in controlled environments. This work presents a visual-inertial sensor unit aimed at effortless deployment on robots in order to equip them with robust real-time Simultaneous Localization and Mapping (SLAM) capabilities, and to facilitate research on this important topic at a low entry barrier.
+
+Up to four cameras are interfaced through a modern ARM- FPGA system, along with an Inertial Measurement Unit (IMU) providing high-quality rate gyro and accelerometer measure- ments, calibrated and hardware-synchronized with the images. This facilitates a tight fusion of visual and inertial cues that leads to a level of robustness and accuracy which is difficult to achieve with purely visual SLAM systems. In addition to raw data, the sensor head provides FPGA-pre-processed data such as visual keypoints, reducing the computational complexity of SLAM algorithms significantly and enabling employment on resource-constrained platforms.
+
+Sensor selection, hardware and firmware design, as well as intrinsic and extrinsic calibration are addressed in this work. Results from a tightly coupled reference visual-inertial motion estimation framework demonstrate the capabilities of the presented system.},
+  year      = 2014
+}
+
+@ARTICLE{heng_jfr14,
+  annote   = {journal-pb},
+  author   = {Lionel Heng and Paul Furgale and Marc Pollefeys},
+  title    = {Leveraging Image-Based Localization for Infrastructure-Based Calibration of a Multi-Camera Rig},
+  year     = 2014,
+  journal  = {Journal of Field Robotics},
+  youtube  = {ppWppzDIYPk},
+  doi      = {10.1002/rob.21540},
+  note     = {(\href{http://www.youtube.com/watch?v=ppWppzDIYPk}{video}), (\href{http://people.inf.ethz.ch/hengli/camodocal/}{code})},
+  codeurl  = {http://people.inf.ethz.ch/hengli/camodocal/},
+  abstract = {Most existing calibration methods for multi-camera rigs are computationally expensive, use installations of known fiducial markers, and require expert supervision.
+We propose an alternative approach called {\em infrastructure-based calibration} that is efficient, requires no modification of the infrastructure (or calibration area), and is completely unsupervised.
+In infrastructure-based calibration, we use a map of a chosen calibration area and leverage image-based localization to calibrate an arbitrary multi-camera rig in near real-time.
+Due to the use of a map, before we can apply infrastructure-based calibration, we have to run a survey phase once to generate a map of the calibration area.
+In this survey phase, we use a survey vehicle equipped with a multi-camera rig and a calibrated odometry system, and SLAM-based self-calibration to build the map which is based on natural features.
+The use of the calibrated odometry system ensures that the metric scale of the map is accurate.
+Our infrastructure-based calibration method does not assume an overlapping field of view between any two cameras, and does not require an initial guess of any extrinsic parameter.
+Through extensive field tests on various ground vehicles in a variety of environments, we demonstrate the accuracy and repeatability of the infrastructure-based calibration method for calibration of a multi-camera rig.
+The code for our infrastructure-based calibration method is publicly available as part of the CamOdoCal library.}
+}
+
+@INPROCEEDINGS{sommer_isrr13,
+  address   = {Singapore},
+  annote    = {abst-conf-pb},
+  webimage  = {sommer_isrr13.png},
+  url       = {bib/sommer_isrr13.pdf},
+  author    = {Hannes Sommer and C\'{e}dric Pradalier and Paul Furgale},
+  booktitle = {Proceedings of the International Symposium on Robotics Research (ISRR)},
+  month     = {16--19 December},
+  title     = {Automatic Differentiation on Differentiable Manifolds as a Tool for Robotics},
+  abstract  = {Automatic differentiation (AD) is a useful tool for computing Jacobians of functions needed in estimation and control algorithms. However, for many inter- esting problems in robotics, state variables live on a differentiable manifold. The most common example are robot orientations that are elements of the Lie group SO(3). This causes problems for AD algorithms that only consider differentiation at the scalar level. Jacobians produced by scalar AD are correct, but scalar-focused methods are unable to apply simplifications based on the structure of the specific manifold. In this paper we extend the theory of AD to encompass handling of differ- entiable manifolds and provide a C++ library that exploits strong typing and expres- sion templates for fast, easy-to-use Jacobian evaluation. This method has a number of benefits over scalar AD. First, it allows the exploitation of algebraic simplifica- tions that make Jacobian evaluations more efficient than their scalar counterparts. Second, strong typing reduces the likelihood of programming errors arising from misinterpretation that are possible when using simple arrays of scalars. To the best of our knowledge, this is the first work to consider the structure of differentiable manifolds directly in AD.},
+  year      = 2013
+}
+
+@INPROCEEDINGS{furgale_iros13,
+  address   = {Tokyo, Japan},
+  annote    = {full-conf-pb},
+  author    = {Paul Furgale and Joern Rehder and Roland Siegwart},
+  booktitle = {Proceedings of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  month     = {3--7 November},
+  pages     = {1280--1286},
+  title     = {Unified Temporal and Spatial Calibration for Multi-Sensor Systems},
+  url       = {bib/furgale_iros13.pdf},
+  year      = 2013,
+  doi       = {10.1109/IROS.2013.6696514},
+  abstract  = {In order to increase accuracy and robustness in state estimation for robotics, a growing number of applications rely on data from multiple complementary sensors. For the best performance in sensor fusion, these different sensors must be spatially and temporally registered with respect to each other. To this end, a number of approaches have been developed to estimate these system parameters in a two stage process, first estimating the time offset and subsequently solving for the spatial transformation between sensors.
+In this work, we present on a novel framework for jointly estimating the temporal offset between measurements of different sensors and their spatial displacements with respect to each other. The approach is enabled by continuous-time batch estimation and extends previous work by seamlessly incorpo- rating time offsets within the rigorous theoretical framework of maximum likelihood estimation.
+Experimental results for a camera to inertial measurement unit (IMU) calibration prove the ability of this framework to accurately estimate time offsets up to a fraction of the smallest measurement period.},
+  webimage  = {furgale_iros13.png}
+}
+
+@INPROCEEDINGS{schwesinger_iv13,
+  annote    = {full-conf-pb},
+  webimage  = {schwesinger_iv13.png},
+  abstract  = {In this paper a generic framework for sampling-based partial motion planning along a reference path is presented. The sampling mechanism builds on the specification of a vehicle model and a control law, both of which are freely selectable. Via a closed-loop forward simulation, the vehicle model is regulated onto a carefully chosen set of terminal states aligned with the reference path, generating system-compliant sample trajectories in accordance with the specified system and environmental constraints. The consideration of arbitrary state and input limits make this framework appealing to nonholonomic systems. The rich trajectory set is evaluated in an online sampling-based planning framework, targeting real-time motion planning in dynamic environments. In an example application, a Volkswagen Golf is modeled via a kinodynamic single-track system that is further constrained by steering angle/rate and velocity/acceleration limits. Control is implemented via state-feedback onto piecewise C0-continuous reference paths. Experiments demonstrate the planner's applicability to online operation, its ability to cope with discontinuous reference paths as well as its capability to navigate in a realistic traffic scenario.},
+  address   = {Gold Coast, Australia},
+  author    = {Ulrich Schwesinger and Martin Rufli and Paul Furgale and Roland Siegwart},
+  booktitle = {IEEE Intelligent Vehicles Symposium (IV)},
+  month     = {23--26 June},
+  pages     = {391--396},
+  title     = {A Sampling-Based Partial Motion Planning Framework for System-Compliant Navigation along a Reference Path},
+  year      = 2013,
+  url       = {schwesinger_iv13.pdf}
+}
+
+@INPROCEEDINGS{muehlfellner_iv13,
+  abstract  = {The European V-Charge project seeks to develop fully automated valet parking and charging of electric vehicles using only low-cost sensors. One of the challenges is to implement robust visual localization using only cameras and stock vehicle sensors. We integrated four monocular, wide-angle, fisheye cameras on a consumer car and implemented a mapping and localization pipeline. Visual features and odometry are combined to build and localize against a keyframe-based three dimensional map. We report results for the first stage of the project, based on two months worth of data acquired under varying conditions, with the objective of localizing against a map created offline.},
+  address   = {Gold Coast, Australia},
+  annote    = {full-conf-pb},
+  author    = {Peter Muehlfellner and Paul Timothy Furgale and Wojciech Derendarz and Roland Philippsen},
+  booktitle = {IEEE Intelligent Vehicles Symposium (IV)},
+  month     = {23--26 June},
+  pages     = {56--62},
+  title     = {Evaluation of Fisheye-Camera Based Visual Multi-Session Localization in a Real-World Scenario},
+  webimage  = {muehlfellner_iv13.png},
+  url       = {bib/muehlfellner_iv13.pdf},
+  year      = 2013,
+  doi       = {10.1109/IV Workshops.2013.6615226}
+}
+
+@INPROCEEDINGS{furgale_iv13,
+  address   = {Gold Coast, Australia},
+  annote    = {full-conf-pb},
+  author    = {Paul Furgale and Ulrich Schwesinger and Martin Rufli and Wojciech Derendarz and Hugo Grimmett and Peter M\"{u}hlfellner and Stefan Wonneberger and Julian Timpner Stephan Rottmann and Bo Li and Bastian Schmidt and Thien Nghia Nguyen and Elena Cardarelli and Stefano Cattani and Stefan Br\"{u}ning and Sven Horstmann and Martin Stellmacher and Holger Mielenz and Kevin K\"{o}ser and Markus Beermann and Christian H\"{a}ne and Lionel Heng and Gim Hee Lee and Friedrich Fraundorfer and Ren\'{e} Iser and Rudolph Triebel and Ingmar Posner and Paul Newman and Lars Wolf and Marc Pollefeys and Stefan Brosig and Jan Effertz and C\'edric Pradalier and Roland Siegwart},
+  booktitle = {IEEE Intelligent Vehicles Symposium (IV)},
+  month     = {23--26 June},
+  pages     = {809--816},
+  title     = {{Toward Automated Driving in Cities using Close-to-Market Sensors, an Overview of the V-Charge Project}},
+  year      = 2013,
+  abstract  = {Future requirements for drastic reduction of CO2
+production and energy consumption will lead to signiﬁcant
+changes in the way we see mobility in the years to come.
+However, the automotive industry has identiﬁed signiﬁcant
+barriers to the adoption of electric vehicles, including reduced
+driving range and greatly increased refueling times.
+Automated cars have the potential to reduce the environmental impact of driving, and increase the safety of motor
+vehicle travel. The current state-of-the-art in vehicle automation
+requires a suite of expensive sensors. While the cost of these
+sensors is decreasing, integrating them into electric cars will
+increase the price and represent another barrier to adoption.
+The V-Charge Project, funded by the European Commission,
+seeks to address these problems simultaneously by developing
+an electric automated car, outﬁtted with close-to-market sensors, which is able to automate valet parking and recharging for
+integration into a future transportation system. The ﬁnal goal
+is the demonstration of a fully operational system including
+automated navigation and parking. This paper presents an
+overview of the V-Charge system, from the platform setup to
+the mapping, perception, and planning sub-systems.},
+  url       = {bib/furgale_iv13.pdf},
+  webimage  = {furgale_iv13.png}
+}
+
+@INPROCEEDINGS{maye_iv13,
+  webimage  = {maye_iv13.png},
+  abstract  = {We present a generic algorithm for self calibration of robotic systems that utilizes two key innovations. First, it uses information theoretic measures to automatically identify and store novel measurement sequences. This keeps the computation tractable by discarding redundant information and allows the system to build a sparse but complete calibration dataset from data collected at different times. Second, as the full observability of the calibration parameters may not be guaranteed for an arbitrary measurement sequence, the algorithm detects and locks unobservable directions in parameter space using a truncated QR decomposition of the Gauss-Newton system. The result is an algorithm that listens to an incoming sensor stream, builds a minimal set of data for estimating the calibration parameters, and updates parameters as they become observable, leaving the others locked at their initial guess. Through an extensive set of simulated and real-world experiments, we demonstrate that our method outperforms state-of-the-art algorithms in terms of stability, accuracy, and computational efficiency.},
+  address   = {Gold Coast, Australia},
+  annote    = {full-conf-pb},
+  author    = {Maye, Jerome and Furgale, Paul and Siegwart, Roland},
+  booktitle = {IEEE Intelligent Vehicles Symposium (IV)},
+  month     = {23--26 June},
+  pages     = {473--480},
+  title     = {Self-supervised Calibration for Robotic Systems},
+  year      = 2013,
+  url       = {bib/maye_iv13.pdf}
+}
+
+@INPROCEEDINGS{leutenegger_rss13,
+  abstract  = {The fusion of visual and inertial cues has become
+popular in robotics due to the complementary nature of the
+two sensing modalities. While most fusion strategies to date
+rely on filtering schemes, the visual robotics community has
+recently turned to non-linear optimization approaches for
+tasks such as visual Simultaneous Localization And Mapping
+(SLAM), following the discovery that this comes with significant 
+advantages in quality of performance and computational
+complexity. Following this trend, we present a novel approach
+to tightly integrate visual measurements with readings from an
+Inertial Measurement Unit (IMU) in SLAM. An IMU error
+term is integrated with the landmark reprojection error in a
+fully probabilistic manner, resulting to a joint non-linear cost
+function to be optimized. Employing the powerful concept of
+`keyframes' we partially marginalize old states to maintain a
+bounded-sized optimization window, ensuring real-time operation. 
+Comparing against both vision-only and loosely-coupled
+visual-inertial algorithms, our experiments confirm the benefits
+of tight fusion in terms of accuracy and robustness.},
+  address   = {Berlin, Germany},
+  annote    = {full-conf-pb},
+  author    = {Stefan Leutenegger and Paul Furgale and Vincent Rabaud and Margarita Chli and Kurt Konolige and Roland Siegwart},
+  booktitle = {Proceedings of Robotics: Science and Systems},
+  month     = {24--28 June},
+  title     = {Keyframe-Based Visual-Inertial SLAM using Nonlinear Optimization},
+  webimage  = {leutenegger_rss13.png},
+  url       = {bib/leutenegger_rss13.pdf},
+  year      = 2013
+}
+
+@INPROCEEDINGS{collier_nato12,
+  address   = {Izmir, Turkey},
+  annote    = {abst-conf-pb},
+  author    = {J Collier and M Trentini and J Giesbrecht and C McManus and P Furgale and B Stenning and T D Barfoot and S Se and V Kotamraju and P Jasiobedzki and L Shang and B Chan and A Harmat and I Sharf},
+  booktitle = {Proceedings of NATO Symposium SET 168: Navigation Sensor and Systems in GNSS Denied Environments},
+  month     = {8--9 October},
+  title     = {Autonomous Navigation and Mapping in GPS-Denied Environments at Defence R\&D Canada},
+  year      = 2012
+}
+
+@INPROCEEDINGS{barfoot_crv12,
+  address   = {Toronto, Canada},
+  annote    = {full-conf-pb},
+  author    = {T Barfoot and B Stenning and P Furgale and C McManus},
+  booktitle = {9th Canadian Conference on Computer and Robot Vision (CRV)},
+  doi       = {10.1109/CRV.2012.58},
+  month     = {28--30 May},
+  pages     = {388--395},
+  title     = {Exploiting Reusable Paths in Mobile Robotics: Benefits and Challenges for Long-term Autonomy},
+  year      = 2012
+}
+
+@INPROCEEDINGS{pickersgill_lpsc12,
+  address   = {Texas, USA},
+  annote    = {abst-conf-pb},
+  author    = {A E Pickersgill and G R Osinski and M Beauchamp and C Marion and M M Mader and R Francis and E McCullough and B Shanker and T D Barfoot and M Bondy and A Chanou and M Daly and H Dong and P Furgale and J Gammell and N Ghafoor N and M Hussein and P Jasiobedski and A Lambert and K Leung and C McManus and H K Ng and A Pontefract and B Stenning and L L Tornabene and J Tripp and ILSR Team},
+  booktitle = {Proceedings of the 43rd Lunar and Planetary Science Conference (LPSC)},
+  month     = {19--23 March},
+  number    = 2657,
+  title     = {Scientific Instrumentation for a Lunar Sample Return Analogue Mission},
+  year      = 2012
+}
+
+@INPROCEEDINGS{stenning_lpsc12,
+  address   = {Texas, USA},
+  annote    = {abst-conf-pb},
+  author    = {B Stenning and G R Osinski and T D Barfoot and G Basic and M Beauchamp and M Daly and H Dong and R Francis and P Furgale and J Gammell and N Ghafoor and A Lambert and K Leung and M Mader and C Marion and E McCullough and C McManus and J Moores and L Preston},
+  booktitle = {Proceedings of the 43rd Lunar and Planetary Science Conference (LPSC)},
+  month     = {19--23 March},
+  number    = 2360,
+  title     = {Planetary Surface Exploration Using a Network of Reusable Paths},
+  year      = 2012
+}
+
+@INPROCEEDINGS{tong_crv12,
+  address   = {Toronto, Canada},
+  annote    = {full-conf-pb},
+  author    = {Chi Hay Tong and Paul T Furgale and Timothy D Barfoot},
+  booktitle = {9th Canadian Conference on Computer and Robot Vision (CRV)},
+  doi       = {10.1109/CRV.2012.35},
+  month     = {28--30 May},
+  pages     = {206--213},
+  title     = {Gaussian Process Gauss-Newton: Non-Parametric State Estimation},
+  year      = 2012
+}
+
+@INPROCEEDINGS{marion_lpsc12,
+  address   = {Texas, USA},
+  annote    = {abst-conf-pb},
+  author    = {C L Marion and G R Osinski and S Abou-Aly and I Antonenko and T Barfoot and N Barry and A Bassi and M Battler and M Beauchamp and M Bondy and S Blain and R Capitan and E Cloutis and L Cupelli and A Chanou and J Clayton and M Daly and H Dong and L Ferriere and R Flemming and L Flynn and R Francis and P Furgale and J Gammell and A Garbino and N Ghafoor and R A F Grieve and K Hodges and M Hussein and P Jasiobedzki and B L Jolliff and M C Kerrigan and A Lambert and K Leung and M M Mader and E McCullough and C McManus and J Moores and H K Ng and C Otto and A Ozaruk and A E Pickersgill and A Pontefract and L J Preston and D Redman and H Sapers and B Shankar and C Shaver and A Singleton and K Souders and B Stenning and P Stooke and P Sylvester and J Tripp and L L Tornabene and T Unrau and D Veillette and K Young and M Zanetti},
+  booktitle = {Proceedings of the 43rd Lunar and Planetary Science Conference (LPSC)},
+  month     = {19--23 March},
+  number    = 2333,
+  title     = {A Series of Robotic and Human Analogue Missions in Support of Lunar Sample Return},
+  year      = 2012
+}
+
+@ARTICLE{moores_asr12,
+  abstract = {A Mission Control Architecture is presented for a Robotic Lunar Sample Return Mission which builds upon the experience of the landed missions of the \{NASA\} Mars Exploration Program. This architecture consists of four separate processes working in parallel at Mission Control and achieving buy-in for plans sequentially instead of simultaneously from all members of the team. These four processes were: science processing, science interpretation, planning and mission evaluation. science processing was responsible for creating products from data downlinked from the field and is organized by instrument. Science Interpretation was responsible for determining whether or not science goals are being met and what measurements need to be taken to satisfy these goals. The Planning process, responsible for scheduling and sequencing observations, and the Evaluation process that fostered inter-process communications, reporting and documentation assisted these processes. This organization is advantageous for its flexibility as shown by the ability of the structure to produce plans for the rover every two hours, for the rapidity with which Mission Control team members may be trained and for the relatively small size of each individual team. This architecture was tested in an analogue mission to the Sudbury impact structure from June 6--17, 2011. A rover was used which was capable of developing a network of locations that could be revisited using a teach and repeat method. This allowed the science team to process several different outcrops in parallel, downselecting at each stage to ensure that the samples selected for caching were the most representative of the site. Over the course of 10&#xa0;days, 18 rock samples were collected from 5 different outcrops, 182 individual field activities -- such as roving or acquiring an image mosaic or other data product -- were completed within 43 command cycles, and the rover travelled over 2200&#xa0;m. Data transfer from communications passes were filled to 74\%. Sample triage was simulated to allow down-selection to 1&#xa0;kg of material for return to Earth. },
+  annote   = {journal-pb},
+  author   = {John E. Moores and Raymond Francis and Marianne Mader and G.R. Osinski and T. Barfoot and N. Barry and G. Basic and M. Battler and M. Beauchamp and S. Blain and M. Bondy and R-D. Capitan and A. Chanou and J. Clayton and E. Cloutis and M. Daly and C. Dickinson and H. Dong and R. Flemming and P. Furgale and J. Gammel and N. Gharfoor and M. Hussein and R. Grieve and H. Henrys and P. Jaziobedski and A. Lambert and K. Leung and C. Marion and E. McCullough and C. McManus and C.D. Neish and H.K. Ng and A. Ozaruk and A. Pickersgill and L.J. Preston and D. Redman and H. Sapers and B. Shankar and A. Singleton and K. Souders and B. Stenning and P. Stooke and P. Sylvester and L. Tornabene},
+  doi      = {10.1016/j.asr.2012.05.008},
+  issn     = {0273-1177},
+  journal  = {Advances in Space Research {\em special issue on ``Lunar Exploration''}},
+  number   = 12,
+  pages    = {1666--1686},
+  title    = {A Mission Control Architecture for robotic lunar sample return as field tested in an analogue deployment to the sudbury impact structure},
+  volume   = 50,
+  year     = 2012
+}
+
+@INPROCEEDINGS{oth_cvpr13,
+  abstract  = {Rolling Shutter (RS) cameras are used across a wide
+range of consumer electronic devices---from smart-phones
+to high-end cameras. It is well known, that if a RS camera
+is used with a moving camera or scene, significant image
+distortions are introduced. The quality or even success of
+structure from motion on rolling shutter images requires the
+usual intrinsic parameters such as focal length and distortion 
+coefficients as well as accurate modelling of the shutter
+timing.
+
+The current state-of-the-art technique for calibrating the
+shutter timings requires specialised hardware. We present a
+new method that only requires video of a known calibration
+pattern. Experimental results on over 60 real datasets show
+that our method is more accurate than the current state of
+the art.},
+  annote    = {full-conf-pb},
+  author    = {Luc Oth and Paul Furgale and Laurent Kneip and Roland Siegwart},
+  booktitle = {Computer Vision and Pattern Recognition (CVPR), 2013 IEEE Conference on},
+  month     = {25--27 June},
+  title     = {Rolling Shutter Camera Calibration},
+  url       = {bib/oth_cvpr13.pdf},
+  webimage  = {oth_cvpr13.png},
+  year      = 2013,
+  pages     = {1360--1367},
+  doi       = {10.1109/CVPR.2013.179},
+  issn      = {1063-6919}
+}
+
+@INPROCEEDINGS{mcmanus_icra12,
+  address   = {St. Paul, MN},
+  annote    = {full-conf-pb},
+  author    = {C McManus and P T Furgale and B Stenning and T D Barfoot},
+  booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+  doi       = {10.1109/ICRA.2012.6224654},
+  month     = {14--18 May},
+  pages     = {389--396},
+  title     = {Visual Teach and Repeat Using Appearance-Based Lidar},
+  webimage  = {mcmanus_icra12.png},
+  url       = {bib/mcmanus_icra12.pdf},
+  abstract  = {Visual Teach and Repeat (VT&R) has proven to be an effective method to allow a vehicle to autonomously repeat any previously driven route without the need for a global
+positioning system. One of the major challenges for a method that relies on visual input to recognize previously visited places is lighting change, as this can make the appearance of a scene look drastically different. For this reason, passive sensors, such as cameras, are not ideal for outdoor environments with inconsistent/inadequate light. However, camera-based systems have been very successful for localization and mapping in outdoor, unstructured terrain, which can be largely attributed to the use of sparse, appearance-based computer vision techniques. Thus, in an effort to achieve lighting invariance and to continue to exploit the heritage of the appearance-based vision techniques traditionally used with cameras, this paper presents the ﬁrst VT&R system that uses appearance-based techniques with laser scanners for motion estimation. The system has been ﬁeld tested in a planetary analogue environment for an entire diurnal cycle, covering more than 11km with an autonomy rate of 99.7\% of the distance traveled.},
+  year      = 2012
+}
+
+@INPROCEEDINGS{furgale_icra12,
+  address   = {St. Paul, MN},
+  annote    = {full-conf-pb},
+  author    = {P T Furgale and T D Barfoot and G Sibley},
+  booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+  doi       = {10.1109/ICRA.2012.6225005},
+  month     = {14--18 May},
+  pages     = {2088--2095},
+  url       = {bib/furgale_icra12.pdf},
+  title     = {Continuous-Time Batch Estimation Using Temporal Basis Functions},
+  year      = 2012,
+  webimage  = {furgale_icra12.png},
+  abstract  = {Roboticists often formulate estimation problems in discrete time for the practical reason of keeping the state size tractable. However, the discrete-time approach does not scale well for use with high-rate sensors, such as inertial measurement units or sweeping laser imaging sensors. The difficulty lies in the fact that a pose variable is typically included for every time at which a measurement is acquired, rendering the dimension of the state impractically large for large numbers of measurements. This issue is exacerbated for the simultaneous localization and mapping (SLAM) problem, which further augments the state to include landmark variables. To address this tractability issue, we propose to move the full maximum likelihood estimation (MLE) problem into continuous time and use temporal basis functions to keep the state size manageable. We present a full probabilistic derivation of the continuous-time estimation problem, derive an estimator based on the assumption that the densities and processes involved are Gaussian, and show how coefficients of a relatively small number of basis functions can form the state to be estimated, making the solution efficient. Our derivation is presented in steps of increasingly specific assumptions, opening the door to the development of other novel continuous-time estimation algorithms through the application of different assumptions at any point. We use the SLAM problem as our motivation throughout the paper, although the approach is not specific to this application. Results from a self-calibration experiment involving a camera and a high-rate inertial measurement unit are provided to validate the approach.}
+}
+
+@PHDTHESIS{furgale_thesis11,
+  annote = {thesis-pb},
+  author = {Paul Furgale},
+  school = {University of Toronto Institute for Aerospace Studies},
+  title  = {Extensions to the Visual Odometry Pipeline for the Exploration of Planetary Surfaces},
+  url    = {bib/furgale_thesis11.pdf},
+  year   = 2011
+}
+
+@ARTICLE{mcmanus_ras13,
+  abstract = {Abstract an effort to facilitate lighting-invariant exploration, this paper presents an appearance-based approach using 3D scanning laser-rangefinders for two core visual navigation techniques: visual odometry (VO) and visual teach and repeat (VT&amp;R). The key to our method is to convert raw laser intensity data into greyscale camera-like images, in order to apply sparse, appearance-based techniques traditionally used with camera imagery. The novel concept of an image stack is introduced, which is an array of azimuth, elevation, range, and intensity images that are used to generate keypoint measurements and measurement uncertainties. Using this technique, we present the following four experiments. In the first experiment, we explore the stability of a representative keypoint detection/description algorithm on camera and laser intensity images collected over a 24 h period outside. In the second and third experiments, we validate our \{VO\} algorithm using real data collected outdoors with two different 3D scanning laser-rangefinders. Lastly, our fourth experiment presents promising preliminary VT&amp;R localization results, where the teaching phase was done during the day and the repeating phase was done at night. These experiments show that it possible to overcome lighting sensitivity encountered with cameras, yet continue to exploit the heritage of the appearance-based visual odometry pipeline. },
+  annote   = {journal-pb},
+  author   = {Colin McManus and Paul Furgale and Timothy D. Barfoot},
+  doi      = {10.1016/j.robot.2013.04.008},
+  issn     = {0921-8890},
+  journal  = {Robotics and Autonomous Systems},
+  number   = 8,
+  pages    = {836--852},
+  title    = {Towards lighting-invariant visual navigation: An appearance-based approach using scanning laser-rangefinders},
+  volume   = 61,
+  webimage = {mcmanus_ras13.jpg},
+  year     = 2013
+}
+
+@ARTICLE{mcmanus_jfr13,
+  annote   = {journal-pb},
+  author   = {C McManus and P T Furgale and B E Stenning and T D Barfoot},
+  doi      = {10.1002/rob.21444},
+  journal  = {Journal of Field Robotics},
+  number   = 2,
+  pages    = {254--287},
+  title    = {Lighting-Invariant Visual Teach and Repeat Using Appearance-Based Lidar},
+  volume   = 30,
+  year     = 2013,
+  abstract = {Visual Teach and Repeat (VT&R) is an effective method to enable a vehicle to repeat any previously driven route using just a visual sensor and without a global positioning system. However, one of the major challenges in recognizing previously visited locations is lighting change, as this can drastically alter the appearance of the scene. In an effort to achieve lighting invariance, this paper details the design of a VT&R system that uses a laser scanner as the primary sensor. Unlike a traditional scan-matching approach, we apply appearance-based computer vision techniques to laser intensity images for motion estimation, providing us the benefit of lighting invariance. Field tests were conducted in an outdoor, planetary analogue environment, over an entire diurnal cycle, repeating a 1.1 km route more than 10 times with an autonomy rate of 99.7\% by distance. We describe, in detail, our experimental setup and results, as well as how we address the various off-nominal scenarios related to feature-poor environments, hardware failures, and estimation drift. An analysis on motion distortion and a comparison with a stereo-based system is also presented. We show that even without motion compensation, our system is robust enough to repeat long-range routes accurately and reliably.},
+  webimage = {mcmanus_jfr13.png}
+}
+
+@ARTICLE{tong_ijrr13,
+  abstract = {In this paper, we present Gaussian Process Gauss--Newton (GPGN), an algorithm for non-parametric, continuous-time, nonlinear, batch state estimation. This work adapts the methods of Gaussian process (GP) regression to address the problem of batch simultaneous localization and mapping (SLAM) by using the Gauss--Newton optimization method. In particular, we formulate the estimation problem with a continuous-time state model, along with the more conventional discrete-time measurements. Two derivations are presented in this paper, reflecting both the weight-space and function-space approaches from the GP regression literature. Validation is conducted through simulations and a hardware experiment, which utilizes the well-understood problem of two-dimensional SLAM as an illustrative example. The performance is compared with the traditional discrete-time batch Gauss--Newton approach, and we also show that GPGN can be employed to estimate motion with only range/bearing measurements of landmarks (i.e. no odometry), even when there are not enough measurements to constrain the pose at a given timestep.},
+  annote   = {journal-pb},
+  author   = {C H Tong and P T Furgale and T D Barfoot},
+  doi      = {10.1177/0278364913478672},
+  journal  = {The International Journal of Robotics Research},
+  number   = 5,
+  pages    = {507--525},
+  title    = {Gaussian Process {G}auss-{N}ewton for Non-Parametric Simultaneous Localization and Mapping},
+  volume   = 32,
+  webimage = {tong_ijrr13.png},
+  year     = 2013
+}
+
+@ARTICLE{furgale_ijrr12,
+  annote  = {journal-pb},
+  author  = {Furgale, Paul and Carle, Pat and Enright, John and Barfoot, Timothy D},
+  doi     = {10.1177/0278364911433135},
+  eprint  = {http://ijr.sagepub.com/content/31/6/707.full.pdf+html},
+  journal = {The International Journal of Robotics Research},
+  note    = {(\href{http://asrl.utias.utoronto.ca/datasets/devon-island-rover-navigation/}{website})},
+  number  = 6,
+  pages   = {707--713},
+  title   = {The Devon Island rover navigation dataset},
+  url     = {sbib/furgale_ijrr12.pdf},
+  volume  = 31,
+  year    = 2012
+}
+
+@ARTICLE{lambert_jfr12,
+  annote    = {journal-pb},
+  author    = {Lambert, Andrew and Furgale, Paul and Barfoot, Timothy D. and Enright, John},
+  doi       = {10.1002/rob.21412},
+  issn      = {1556--4967},
+  journal   = {Journal of Field Robotics},
+  number    = 3,
+  pages     = {426--444},
+  publisher = {Wiley Subscription Services, Inc., A Wiley Company},
+  title     = {Field testing of visual odometry aided by a sun sensor and inclinometer},
+  url       = {sbib/lambert_jfr12.pdf},
+  volume    = 29,
+  year      = 2012
+}
+
+@INPROCEEDINGS{moores_epsc2011,
+  address   = {Nantes, France},
+  annote    = {abst-conf-pb},
+  author    = {J.E. Moores and R. Francis and T. Barfoot and N. Barry and G. Basic and M. Battler and M. Beauchamp and S. Blain and M. Bondy and R-D. Capitan and A. Chanou and J. Clayton and E. Cloutis and M. Daly and C. Dickinson and H. Dong and R. Flemming and P. Furgale and J. Gammel and N. Ghafoor and M. Hussein and R. Grieve and H Henrys and P. Jaziobedski and A. Lambert and K. Leung and M. Mader and C. Marion and E. McCullough and C. McManus and C.D. Neish and H.K. Ng and A. Ozaruk and A. Pickersgill and L.J. Preston and D. Redman and H. Sapers and B. Shankar and A. Singleton and K. Souders and B. Stenning and P. Stooke and P. Sylvester and L. Tornabene and G.R. Osinski},
+  booktitle = {Proceedings of the European Planetary Science Congress (EPSC-DPS)},
+  month     = {2--7 October},
+  pages     = {1728},
+  title     = {Mission Operations Design for Lunar Sample Return as Field-Tested in an Analogue Deployment to the Sudbury Impact Structure},
+  volume    = 6,
+  year      = 2011
+}
+
+@INPROCEEDINGS{mcmanus_icra11,
+  address   = {Shanghai, China},
+  annote    = {full-conf-pb},
+  author    = {C McManus and P T Furgale and T D Barfoot},
+  booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+  month     = {9--13 May},
+  pages     = {1930--1935},
+  title     = {Towards Appearance-based Methods for Lidar Sensors},
+  url       = {sbib/mcmanus_icra11.pdf},
+  year      = 2011
+}
+
+@INPROCEEDINGS{lambert_ieeeac11,
+  address   = {Big Sky, MT},
+  annote    = {full-conf-pb},
+  author    = {A Lambert and P Furgale and T D Barfoot and J Enright},
+  booktitle = {Proceedings of the IEEE Aerospace Conference},
+  doi       = {10.1109/AERO.2011.5747268},
+  month     = {5--12 March},
+  number    = {\#1279},
+  title     = {Visual Odometry Aided by a Sun Sensor and Inclinometer},
+  url       = {sbib/lambert_ieeeac11.pdf},
+  year      = 2011
+}
+
+@ARTICLE{furgale_ijrr10,
+  annote  = {journal-pb},
+  author  = {P T Furgale and T D Barfoot and G R Osinski and K Williams and N Ghafoor},
+  doi     = {10.1177/0278364910378179},
+  journal = {The International Journal of Robotics Research, {\em special issue on ``Field and Service Robotics''}},
+  note    = {(\href{http://www.youtube.com/utiasASRL#p/u/11/AwC31S0-zbM}{video})},
+  number  = 12,
+  pages   = {1529--1549},
+  title   = {Field Testing of an Integrated Surface/Subsurface Modeling Technique for Planetary Exploration},
+  url     = {sbib/furgale_ijrr10.pdf},
+  volume  = 29,
+  year    = 2010,
+  youtube = {AwC31S0-zbM}
+}
+
+@ARTICLE{furgale_jfr10,
+  annote   = {journal-pb},
+  author   = {P T Furgale and T D Barfoot},
+  doi      = {10.1002/rob.20342},
+  journal  = {Journal of Field Robotics, {\em special issue on ``Visual mapping and navigation outdoors''}},
+  note     = {(\href{http://asrl.utias.utoronto.ca/~ptf/JFR_TnR/}{videos})},
+  number   = 5,
+  abstract = {This paper describes a system built to enable long-range rover autonomy using a stereo camera as the only sensor. During a learning phase, the system builds a manifold map of overlapping submaps as it is piloted along a route. The map is then used for localization as the rover repeats the route autonomously. The use of local submaps allows the rover to faithfully repeat long routes without the need for an accurate global reconstruction. Path following over nonplanar terrain is handled by performing localization in three dimensions and then projecting this down to a local ground plane associated with the current submap to perform path tracking. We have tested this system in an urban area and in a planetary analog setting in the Canadian High Arctic. More than 32 km was covered—99.6\% autonomously—with autonomous runs ranging from 45 m to 3.2 km, all without the use of the global positioning system (GPS). Because it enables long-range autonomous behavior in a single command cycle, visual teach and repeat is well suited to planetary applications, such as Mars sample return, in which no GPS is available.},
+  pages    = {534--560},
+  title    = {Visual Teach and Repeat for Long-Range Rover Autonomy},
+  url      = {sbib/furgale_jfr10.pdf},
+  volume   = 27,
+  year     = 2010,
+  youtube  = {gwe6pFtxp5w}
+}
+
+@INPROCEEDINGS{barfoot_cim10,
+  address   = {Montreal, Quebec},
+  annote    = {full-conf-pb},
+  author    = {T D Barfoot and P T Furgale and B E Stenning and P J F Carle and J P Enright and P Lee},
+  booktitle = {Brain, Body, and Machine: Proceedings of an International Symposium on the Occasion of the 25th Anniversary of the McGill University Centre for Intelligent Machines},
+  doi       = {10.1007/978-3-642-16259-6\_21},
+  editor    = {J Angeles and B Boulet and J Clark and J Kovecses and K Siddiqi},
+  month     = {10--12 November},
+  pages     = {269--281},
+  publisher = {Springer},
+  series    = {Advances in Intelligent and Soft Computing 83},
+  title     = {Devon Island as a Proving Ground for Planetary Rovers},
+  url       = {sbib/barfoot_cim10.pdf},
+  year      = 2010
+}
+
+@ARTICLE{barfoot_aa11,
+  annote  = {journal-pb},
+  author  = {T D Barfoot and J R Forbes and P T Furgale},
+  doi     = {10.1016/j.actaastro.2010.06.049},
+  journal = {Acta Astronautica},
+  note    = {Version with unpublished appendix available (\href{http://asrl.utias.utoronto.ca/~ptf/bib/barfoot_aa10_appendix.pdf}{pdf})},
+  number  = {1--2},
+  pages   = {101--112},
+  title   = {Pose Estimation using Linearized Rotations and Quaternion Algebra},
+  url     = {sbib/barfoot_aa10.pdf},
+  volume  = 68,
+  year    = 2011
+}
+
+@INPROCEEDINGS{furgale_iros10,
+  address   = {Taipei, Taiwan},
+  annote    = {full-conf-pb},
+  author    = {P T Furgale and P Carle and T D Barfoot},
+  booktitle = {Proceedings of the IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  month     = {18--22 October},
+  pages     = {4964--4969},
+  title     = {A Comparison of Global Localization Algorithms for Planetary Exploration},
+  url       = {sbib/furgale_iros10.pdf},
+  year      = 2010
+}
+
+@INPROCEEDINGS{barfoot_isairas10,
+  address   = {Sapporo, Japan},
+  annote    = {abst-conf-pb},
+  author    = {T Barfoot and P Furgale and B Stenning and P Carle and L Thomson and G Osinski and M Daly},
+  booktitle = {Proceedings of the 10th International Symposium on Artificial Intelligence, Robotics and Automation in Space (iSAIRAS)},
+  month     = {29 August - 1 September},
+  title     = {Field Testing of Rover GN\&C Techniques to Support a Ground-Ice Prospecting Mission to Mars},
+  url       = {bib/barfoot_isairas10.pdf},
+  year      = 2010
+}
+
+@INPROCEEDINGS{barfoot_csew08,
+  address   = {Montreal, Quebec},
+  annote    = {abst-conf-pb},
+  author    = {T D Barfoot and P T Furgale and N Ghafoor and G R Osinski and T W Haltigin and K K Williams},
+  booktitle = {Proceedings of the Canadian Space Exploration Workshop (CSEW)},
+  local-url = {bib/barfoot_csew08.pdf},
+  month     = {1--3 December},
+  number    = {CSEW6014},
+  pages     = {73--74},
+  title     = {Field Testing of a Mission Concept to Sample Ground Ice in Martian Polygonal Terrain},
+  url       = {bib/barfoot_csew08.pdf},
+  year      = 2008
+}
+
+@ARTICLE{barfoot_ras11,
+  annote  = {journal-pb},
+  author  = {T Barfoot and P Furgale and B Stenning and P Carle and L Thomson and G Osinski and M Daly and N Ghafoor},
+  doi     = {10.1016/j.robot.2011.03.004},
+  journal = {Robotics and Autonomous Systems},
+  number  = 6,
+  pages   = {472--488},
+  title   = {Field Testing of a Rover Guidance, Navigation, \& Control Architecture to Support a Ground-Ice Prospecting Mission to Mars},
+  volume  = 59,
+  year    = 2011
+}
+
+@INPROCEEDINGS{barfoot_icra10,
+  address   = {Anchorage, Alaska, USA},
+  annote    = {abst-conf-pb},
+  author    = {T Barfoot and P Furgale and B Stenning and P Carle},
+  booktitle = {Proceedings of the Planetary Rovers Workshop, IEEE International Conference on Robotics and Automation (ICRA).},
+  month     = {3 May},
+  title     = {Field Testing of Rover GN\&C Techniques to Support a Ground-Ice Prospecting Mission to Mars},
+  url       = {bib/barfoot_icra10.pdf},
+  year      = 2010
+}
+
+@ARTICLE{barfoot_pss10,
+  annote  = {journal-pb},
+  author  = {T D Barfoot and P T Furgale and G R Osinski and N Ghafoor and K Williams},
+  doi     = {10.1016/j.pss.2009.09.021},
+  journal = {Planetary and Space Science, {\em special issue on ``Exploring other worlds by exploring our own: The role of terrestrial analogue studies in planetary exploration''}},
+  month   = mar,
+  number  = 4,
+  pages   = {671--681},
+  title   = {Field Testing of Robotic Technologies to Support Ground-Ice Prospecting in Martian Polygonal Terrain},
+  url     = {sbib/barfoot_pss10.pdf},
+  volume  = 58,
+  year    = 2010
+}
+
+@INPROCEEDINGS{osinski_csew08,
+  address   = {Montreal, Quebec},
+  annote    = {abst-conf-pb},
+  author    = {G R Osinski and T D Barfoot and N Ghafoor and J Tripp and R Richards and P Jasiobedzki and T W Haltigin and N Banerjee and M Izawa and P Furgale},
+  booktitle = {Proceedings of the Canadian Space Exploration Workshop (CSEW)},
+  month     = {1--3 December},
+  number    = {CSEW6003},
+  pages     = {50--51},
+  title     = {Lidar and mSM as scientific tools for the geological mapping of planetary surfaces},
+  url       = {bib/osinski_csew08.pdf},
+  year      = 2008
+}
+
+@ARTICLE{carle_jfr10,
+  annote  = {journal-pb},
+  author  = {P Carle and P T Furgale and T D Barfoot},
+  doi     = {10.1002/rob.20336},
+  journal = {Journal of Field Robotics},
+  note    = {(\href{http://www.youtube.com/utiasASRL\#p/a/u/3/sGGkMmjC2Js}{video})},
+  number  = 3,
+  pages   = {344--370},
+  title   = {Long-Range Rover Localization by Matching Lidar Scans to Orbital Elevation Maps},
+  url     = {sbib/carle_jfr10.pdf},
+  volume  = 27,
+  year    = 2010
+}
+
+@INPROCEEDINGS{furgale_fsr09,
+  address   = {Cambridge, MA},
+  annote    = {full-conf-pb},
+  author    = {P Furgale and T D Barfoot and N Ghafoor},
+  booktitle = {Proceedings of Field and Service Robotics (FSR)},
+  month     = {14--16 July},
+  note      = {(\href{http://www.youtube.com/utiasASRL#p/u/11/AwC31S0-zbM}{video})},
+  title     = {Rover-Based Surface and Subsurface Modeling for Planetary Exploration},
+  url       = {bib/furgale_fsr09.pdf},
+  year      = 2009
+}
+
+@INPROCEEDINGS{furgale_icra10a,
+  address   = {Anchorage, Alaska, USA},
+  annote    = {full-conf-pb},
+  author    = {P T Furgale and T D Barfoot},
+  booktitle = {Proceedings of the International Conference on Robotics and Automation (ICRA)},
+  month     = {3--8 May},
+  note      = {(\href{http://www.youtube.com/user/utiasASRL#p/u/0/KW8vi0791JI}{video1}), (\href{http://www.youtube.com/user/utiasASRL#p/a/u/1/gwe6pFtxp5w}{video2})},
+  pages     = {4410--4416},
+  title     = {Stereo Mapping and Localization for Long-Range Path Following on Rough Terrain},
+  url       = {sbib/furgale_icra10a.pdf},
+  year      = 2010
+}
+
+@INPROCEEDINGS{enright_ieeeac09,
+  address   = {Big Sky, MT},
+  annote    = {full-conf-pb},
+  author    = {J Enright and P Furgale and T D Barfoot},
+  booktitle = {Proceedings of the IEEE Aerospace Conference},
+  doi       = {10.1109/AERO.2009.4839311},
+  month     = {7--14 March},
+  title     = {Sun Sensing for Planetary Rover Navigation},
+  url       = {sbib/enright_ieeeac09.pdf},
+  year      = 2009
+}
+
+@ARTICLE{furgale_taes11,
+  annote  = {journal-pb},
+  author  = {P T Furgale and J Enright and T D Barfoot},
+  doi     = {10.1109/TAES.2011.5937255},
+  journal = {IEEE Transactions on Aerospace and Electronic Systems},
+  number  = 3,
+  pages   = {1631--1647},
+  title   = {Sun Sensor Navigation for Planetary Rovers: Theory and Field Testing},
+  url     = {sbib/furgale_taes10.pdf},
+  volume  = 47,
+  year    = 2011
+}
+
+@TECHREPORT{furgale_mda08,
+  annote      = {industry-pb},
+  author      = {P T Furgale and T D Barfoot},
+  institution = {UTIAS -- Prepared for MDA Space Missions (under subcontract to the Canadian Space Agency, STDP Program)},
+  month       = mar,
+  title       = {Visual Odometry: Comparison and Results},
+  year        = 2008
+}
+
+@INPROCEEDINGS{furgale_icra10b,
+  address   = {Anchorage, Alaska, USA},
+  annote    = {full-conf-pb},
+  author    = {P T Furgale and T D Barfoot},
+  award     = {\bf ICRA 2010 Kuka Service Robotics Best Paper Award},
+  booktitle = {Proceedings of the International Conference on Robotics and Automation (ICRA)},
+  month     = {3--8 May},
+  note      = {(\href{http://www.youtube.com/user/utiasASRL#p/a/u/2/5bcKwrL_1As}{video})},
+  pages     = {534--539},
+  title     = {Visual Path Following on a Manifold in Unstructured Three-Dimensional Terrain},
+  url       = {sbib/furgale_icra10b.pdf},
+  year      = 2010
+}
+
