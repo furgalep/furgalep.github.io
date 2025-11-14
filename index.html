@@ -1,0 +1,1783 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Bomb Defusal</title>
+  <style>
+    :root {
+      --bg-color: #103c10;
+      --flash-opacity: 0;
+      --glitch-opacity: 0;
+      --accent: #ff3b30;
+      --text: #f2f2f2;
+      --dim: #999;
+      --button: #1e1e1e;
+      --button-text: #e6e6e6;
+      --button-shadow: rgba(0, 0, 0, 0.5);
+      --good: #20c997;
+      --warn: #f1c40f;
+      --bad: #ff3b30;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      height: 100%;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+      user-select: none;
+    }
+    .app {
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 1.2rem;
+      padding: 2.0rem 1.6rem 1.6rem;
+      box-sizing: border-box;
+    }
+    .title {
+      text-align: center;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+      letter-spacing: 0.08em;
+      color: #e8f5e9;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+    .main {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      grid-template-rows: auto auto;
+      gap: 1.2rem;
+      align-items: start;
+    }
+    .timer {
+      grid-column: 1;
+      grid-row: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 1.2rem;
+      background: rgba(0,0,0,0.18);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.45) inset, 0 6px 18px rgba(0,0,0,0.35);
+    }
+    /* 7-Segment Display - Bigger */
+    .time {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.15em;
+      font-size: clamp(4rem, 14vw, 10rem);
+    }
+    .segment-display {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.1em;
+    }
+    .segment-digit {
+      position: relative;
+      width: 0.6em;
+      height: 1em;
+      display: inline-block;
+    }
+    .segment-colon {
+      width: 0.2em;
+      height: 1em;
+      display: inline-flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.3em;
+      align-items: center;
+    }
+    .segment-dot {
+      width: 0.12em;
+      height: 0.12em;
+      background: #00ff41;
+      border-radius: 50%;
+      box-shadow: 0 0 4px rgba(0, 255, 65, 0.8);
+    }
+    .segment {
+      position: absolute;
+      background: rgba(0, 255, 65, 0.15);
+      box-shadow: 0 0 2px rgba(0, 255, 65, 0.3);
+    }
+    .segment.on {
+      background: #00ff41;
+      box-shadow: 
+        0 0 6px rgba(0, 255, 65, 0.9),
+        0 0 12px rgba(0, 255, 65, 0.6),
+        0 0 18px rgba(0, 255, 65, 0.3);
+    }
+    /* Horizontal segments (a, d, g) */
+    .segment-a, .segment-d, .segment-g {
+      width: 0.5em;
+      height: 0.08em;
+      left: 0.05em;
+    }
+    .segment-a { top: 0; }
+    .segment-d { bottom: 0; }
+    .segment-g { top: 50%; transform: translateY(-50%); }
+    /* Vertical segments */
+    .segment-b, .segment-c {
+      width: 0.08em;
+      height: 0.42em;
+      right: 0;
+    }
+    .segment-b { top: 0.05em; }
+    .segment-c { bottom: 0.05em; }
+    .segment-e, .segment-f {
+      width: 0.08em;
+      height: 0.42em;
+      left: 0;
+    }
+    .segment-e { bottom: 0.05em; }
+    .segment-f { top: 0.05em; }
+    .status {
+      margin-top: 0.6rem;
+      min-height: 1.8rem;
+      font-size: clamp(1rem, 2.2vw, 1.4rem);
+      color: #e0e0e0;
+      letter-spacing: 0.06em;
+      text-align: center;
+      opacity: 0.9;
+    }
+    .code-entry {
+      grid-column: 1;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 1.2rem;
+      background: rgba(0,0,0,0.18);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.45) inset, 0 6px 18px rgba(0,0,0,0.35);
+    }
+    .code-images {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .code-images img {
+      width: clamp(60px, 12vw, 100px);
+      height: clamp(60px, 12vw, 100px);
+      object-fit: cover;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.3);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    }
+    .code-entry-label {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      color: #b0b0b0;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.6rem;
+      opacity: 0.85;
+    }
+    .code {
+      min-height: 2.5rem;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #e0e0e0;
+      letter-spacing: 0.5em;
+      text-align: center;
+      opacity: 0.95;
+      font-weight: 600;
+    }
+    .keypad {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.9rem;
+      align-self: stretch;
+    }
+    .key {
+      aspect-ratio: 1/0.8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      background: linear-gradient(180deg, #2a2a2a, #1a1a1a);
+      color: var(--button-text);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      box-shadow: 0 8px 0 #0f0f0f, 0 12px 18px var(--button-shadow);
+      cursor: pointer;
+      transition: transform 60ms ease, box-shadow 60ms ease, background 180ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .key:active {
+      transform: translateY(4px);
+      box-shadow: 0 4px 0 #0f0f0f, 0 8px 12px var(--button-shadow);
+      background: linear-gradient(180deg, #242424, #121212);
+    }
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dim);
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    /* Flash overlay at critical time */
+    .flash {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(255, 0, 0, var(--flash-opacity));
+      mix-blend-mode: screen;
+      transition: background 120ms linear;
+    }
+    /* TV Glitch/Fuzzy overlay - Increased magnitude with screen deformation */
+    .glitch {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: var(--glitch-opacity);
+      z-index: 10;
+      transform-origin: center center;
+      animation: glitchDeform 0.2s infinite;
+    }
+    /* Strong glitch takeover effect for transitions */
+    .glitch.takeover {
+      opacity: 1 !important;
+      animation: glitchScan 0.05s linear infinite, glitchDeform 0.12s infinite !important;
+      z-index: 30; /* above video overlay */
+      transition: opacity 180ms ease-out;
+    }
+    /* Canvas-based glitch overlay drawn on top of everything including YouTube */
+    #glitchCanvas {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      pointer-events: none;
+      display: none;
+      image-rendering: pixelated;
+    }
+    @keyframes glitchDeform {
+      0%, 100% {
+        transform: scale(1) skew(0deg, 0deg);
+        filter: none;
+      }
+      10% {
+        transform: scale(1.01) skew(-0.5deg, 0.2deg);
+        filter: brightness(1.05);
+      }
+      20% {
+        transform: scale(0.99) skew(0.3deg, -0.3deg);
+        filter: brightness(0.95);
+      }
+      30% {
+        transform: scale(1.005) skew(-0.2deg, 0.4deg);
+        filter: brightness(1.02);
+      }
+      40% {
+        transform: scale(0.995) skew(0.4deg, -0.2deg);
+        filter: brightness(0.98);
+      }
+      50% {
+        transform: scale(1.02) skew(-0.6deg, 0.3deg);
+        filter: brightness(1.08) contrast(1.1);
+      }
+      60% {
+        transform: scale(0.98) skew(0.5deg, -0.4deg);
+        filter: brightness(0.92) contrast(0.95);
+      }
+      70% {
+        transform: scale(1.01) skew(-0.3deg, 0.5deg);
+        filter: brightness(1.03);
+      }
+      80% {
+        transform: scale(0.99) skew(0.2deg, -0.3deg);
+        filter: brightness(0.97);
+      }
+      90% {
+        transform: scale(1.005) skew(-0.4deg, 0.2deg);
+        filter: brightness(1.01);
+      }
+    }
+    .glitch::before,
+    .glitch::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    /* RGB channel separation effect - Increased */
+    .glitch::before {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 0, 0, 0.15) 25%,
+        transparent 50%,
+        rgba(0, 255, 0, 0.15) 75%,
+        transparent 100%
+      );
+      animation: glitchShift 0.1s infinite;
+      mix-blend-mode: screen;
+      transform-origin: center center;
+    }
+    .glitch::after {
+      background: 
+        repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.3) 0px,
+          rgba(0, 0, 0, 0.3) 2px,
+          transparent 2px,
+          transparent 4px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.1) 0px,
+          rgba(255, 255, 255, 0.1) 2px,
+          transparent 2px,
+          transparent 4px
+        );
+      animation: glitchNoise 0.08s steps(2) infinite;
+      mix-blend-mode: overlay;
+      transform-origin: center center;
+    }
+    @keyframes glitchShift {
+      0% {
+        transform: translateX(0) scaleY(1);
+        opacity: 1;
+      }
+      10% {
+        transform: translateX(-8px) scaleY(1.01);
+        opacity: 0.7;
+      }
+      20% {
+        transform: translateX(8px) scaleY(0.99);
+        opacity: 0.9;
+      }
+      30% {
+        transform: translateX(-4px) scaleY(1.005);
+        opacity: 0.8;
+      }
+      40% {
+        transform: translateX(4px) scaleY(0.995);
+        opacity: 0.9;
+      }
+      50% {
+        transform: translateX(-6px) scaleY(1.02);
+        opacity: 0.75;
+      }
+      60% {
+        transform: translateX(6px) scaleY(0.98);
+        opacity: 0.85;
+      }
+      70% {
+        transform: translateX(-3px) scaleY(1.01);
+        opacity: 0.9;
+      }
+      80% {
+        transform: translateX(3px) scaleY(0.99);
+        opacity: 0.8;
+      }
+      90% {
+        transform: translateX(-5px) scaleY(1.005);
+        opacity: 0.85;
+      }
+      100% {
+        transform: translateX(0) scaleY(1);
+        opacity: 1;
+      }
+    }
+    @keyframes glitchNoise {
+      0%, 100% {
+        opacity: 1;
+        filter: brightness(1);
+        transform: scale(1);
+      }
+      25% {
+        opacity: 0.7;
+        filter: brightness(1.2);
+        transform: scale(1.01);
+      }
+      50% {
+        opacity: 0.9;
+        filter: brightness(0.9);
+        transform: scale(0.99);
+      }
+      75% {
+        opacity: 0.8;
+        filter: brightness(1.1);
+        transform: scale(1.005);
+      }
+    }
+    /* Scan line effect - Increased */
+    .glitch {
+      background-image: 
+        repeating-linear-gradient(
+          0deg,
+          transparent 0px,
+          transparent 1px,
+          rgba(0, 0, 0, 0.2) 1px,
+          rgba(0, 0, 0, 0.2) 2px
+        );
+      animation: glitchScan 0.08s linear infinite, glitchDeform 0.2s infinite;
+    }
+    @keyframes glitchScan {
+      0% {
+        background-position: 0 0;
+      }
+      100% {
+        background-position: 0 3px;
+      }
+    }
+    /* Screen flash on incorrect code */
+    .screen-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 0, 0, 0.9);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 15;
+      animation: screenFlash 0.15s ease-out;
+    }
+    .screen-flash.success {
+      background: rgba(0, 255, 65, 0.85);
+      z-index: 25; /* ensure success flash appears above overlays */
+    }
+    @keyframes screenFlash {
+      0% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+    /* Overlays */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+    .overlay.show { display: flex; }
+    /* Intro screen */
+    .intro-screen {
+      text-align: center;
+      color: var(--text);
+    }
+    .intro-screen h1 {
+      font-size: clamp(2rem, 6vw, 4rem);
+      margin: 0 0 1rem;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .intro-screen p {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: var(--dim);
+      margin: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    /* Fullscreen YouTube player container */
+    #playerContainer {
+      width: 100vw;
+      height: 100vh;
+    }
+    #playerContainer iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    /* Skip button for intro video */
+    .video-skip-button {
+      position: absolute;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      background: rgba(0, 0, 0, 0.75);
+      color: var(--text);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 25;
+      display: none;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+    .video-skip-button:hover {
+      background: rgba(0, 0, 0, 0.9);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+    .video-skip-button:active {
+      transform: scale(0.95);
+    }
+    .video-skip-button.show {
+      display: block;
+    }
+    .admin {
+      width: min(880px, 92vw);
+      max-height: 92vh;
+      overflow: auto;
+      background: #121212;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      box-shadow: 0 20px 36px rgba(0,0,0,0.6);
+      padding: 1.2rem;
+    }
+    .admin h2 {
+      margin: 0 0 0.6rem;
+      font-size: 1.4rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem 1rem;
+    }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .field label {
+      font-size: 0.9rem;
+      color: #cfcfcf;
+    }
+    .field input, .field textarea {
+      background: #1a1a1a;
+      color: #f2f2f2;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 0.6rem 0.7rem;
+      font-size: 1rem;
+      outline: none;
+    }
+    .row {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      justify-content: flex-end;
+      margin-top: 1rem;
+    }
+    .btn {
+      padding: 0.7rem 1.0rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #232323;
+      color: #f6f6f6;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn.primary {
+      background: #2d6cdf;
+      border-color: #2d6cdf;
+    }
+    .hidden { display: none !important; }
+    /* Game over alarm text */
+    .gameover {
+      font-size: clamp(2.4rem, 8vw, 5rem);
+      color: #ff6666;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 18px rgba(255,0,0,0.6), 0 2px 0 rgba(0,0,0,0.8);
+      text-align: center;
+    }
+    /* Responsive: stack on portrait */
+    @media (orientation: portrait) {
+      .main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      .timer {
+        grid-column: 1;
+        grid-row: 1;
+      }
+      .code-entry {
+        grid-column: 1;
+        grid-row: 2;
+      }
+      .keypad {
+        grid-column: 1;
+        grid-row: 3;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="title" id="title">Bomb Defusal</div>
+    <div class="main">
+      <section class="timer">
+        <div class="time" id="time"></div>
+        <div class="status" id="status">Würfel – Taschenlampe – Bild – Leuchtmünze</div>
+      </section>
+      <section class="code-entry">
+        <div class="code-images">
+          <img src="0_0.jpg" alt="Code image 1">
+          <img src="0_1.jpg" alt="Code image 2">
+          <img src="0_2.jpg" alt="Code image 3">
+          <img src="0_3.jpg" alt="Code image 4">
+        </div>
+        <div class="code-entry-label">Code Entry</div>
+        <div class="code" id="codeMask">&bull;&bull;&bull;&bull;</div>
+      </section>
+      <section class="keypad" id="keypad">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key" data-key="*">*</button>
+        <button class="key" data-key="0">0</button>
+        <button class="key" data-key="#">#</button>
+      </section>
+    </div>
+    <div class="footer">Hold * for 5 seconds to open Admin</div>
+  </div>
+
+  <!-- Overlays -->
+  <div class="flash" id="flash"></div>
+  <div class="glitch" id="glitch"></div>
+
+  <div class="overlay" id="videoOverlay" aria-hidden="true">
+    <div id="playerContainer"></div>
+    <button id="videoSkipButton" class="video-skip-button" aria-label="Skip video">Skip</button>
+  </div>
+
+  <div class="overlay" id="gameOverOverlay" aria-live="assertive" aria-atomic="true">
+    <div class="gameover" id="gameOverText">FAILED</div>
+  </div>
+
+  <div class="overlay" id="introOverlay">
+    <div class="intro-screen">
+      <h1 id="introTitle">Click to Start</h1>
+      <p id="introSubtitle">Tap anywhere to begin</p>
+    </div>
+  </div>
+
+  <canvas id="glitchCanvas"></canvas>
+
+  <div class="overlay" id="adminOverlay">
+    <div class="admin">
+      <h2>Admin Console</h2>
+      <div class="grid grid-3">
+        <div class="field">
+          <label for="minutes">Minutes</label>
+          <input id="minutes" type="number" min="0" max="599" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="seconds">Seconds</label>
+          <input id="seconds" type="number" min="0" max="59" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label for="code">4-digit Code</label>
+          <input id="code" type="text" maxlength="4" inputmode="numeric" pattern="\\d{4}" placeholder="0000">
+        </div>
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label for="vid1">YouTube Video ID #1</label>
+          <input id="vid1" type="text" placeholder="e.g. dQw4w9WgXcQ">
+        </div>
+        <div class="field">
+          <label for="vidIntro">Intro YouTube Video ID</label>
+          <input id="vidIntro" type="text" placeholder="e.g. dQw4w9WgXcQ">
+        </div>
+        <div class="field">
+          <label for="vidSuccess">Success YouTube Video ID</label>
+          <input id="vidSuccess" type="text" placeholder="e.g. dQw4w9WgXcQ">
+        </div>
+        <div class="field">
+          <label for="vid2">YouTube Video ID #2</label>
+          <input id="vid2" type="text" placeholder="e.g. dQw4w9WgXcQ">
+        </div>
+        <div class="field">
+          <label for="vid3">YouTube Video ID #3</label>
+          <input id="vid3" type="text" placeholder="e.g. dQw4w9WgXcQ">
+        </div>
+        <div class="field">
+          <label for="videoTimeout">Video Timeout (seconds)</label>
+          <input id="videoTimeout" type="number" min="10" max="300" placeholder="60" title="How long to wait before closing video overlay (10-300 seconds)">
+        </div>
+      </div>
+      <h3>Messages</h3>
+      <div class="grid">
+        <div class="field">
+          <label for="msgTitle">Title</label>
+          <input id="msgTitle" type="text" maxlength="64" placeholder="Bomb Defusal">
+        </div>
+        <div class="field">
+          <label for="msgIdle">Idle / Instructions</label>
+          <input id="msgIdle" type="text" maxlength="140" placeholder="Würfel – Taschenlampe – Bild – Leuchtmünze">
+        </div>
+        <div class="field">
+          <label for="msgSuccess">Success Message</label>
+          <input id="msgSuccess" type="text" maxlength="140" placeholder="Disarmed">
+        </div>
+        <div class="field">
+          <label for="msgFailure">Failure TTS Message</label>
+          <input id="msgFailure" type="text" maxlength="140" placeholder="Incorrect. Try again.">
+        </div>
+        <div class="field">
+          <label for="msgGameOver">Game Over Message</label>
+          <input id="msgGameOver" type="text" maxlength="140" placeholder="FAILED">
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn" id="adminClose">Close</button>
+        <button class="btn primary" id="adminSaveStart">Save, Reset, and Start</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Settings and state
+    const STORAGE_KEY = 'tablet-puzzle-settings-v1';
+    const DEFAULTS = {
+      initialSeconds: 20 * 60, // 20 minutes
+      successCode: '1234', // string, preserves leading zeros
+      introVideoId: 'LcRkkzF7GGY',
+      successVideoId: 'XK0lGkRItoA',
+      penaltyVideoIds: ['tpNbSbIApiY', 'RqvEsaojvsY', 'kjuH0vSss-g'],
+      videoTimeout: 60, // seconds - how long to wait before closing video overlay
+      messages: {
+        title: 'Gigasprudel 3000 Meistersender',
+        idle: 'Würfel – Taschenlampe – Bild – Leuchtmünze',
+        success: 'Disarmed',
+        failureTTS: 'Falsch. Versuch’s nochmal.',
+        gameOver: 'FAILED',
+        failureLines: [
+          'Falscher Code. Richtige Einstellung. Versuch’s nochmal.',
+          'Leider falsch. Dieses Schloss bleibt unbeeindruckt.',
+          'Knapp vorbei ist auch daneben – sehr daneben.',
+          'Zugriff verweigert. Das Tastenfeld bleibt stoisch.',
+          'Wenn das ein Draht wäre, hättest du den falschen durchtrennt.',
+          'Fast richtig – in einem Paralleluniversum.',
+          'Nicht der Code, aber der Mut zählt. Weiter!',
+          'Das war kein Code, das war ein Statement.',
+          'Mutige Wahl. Falsche Wahl. Nächster Versuch.',
+          'Zugang abgelehnt. Schlagfertigkeit genehmigt. Nochmal!'
+        ],
+      },
+    };
+
+    const el = {
+      title: document.getElementById('title'),
+      time: document.getElementById('time'),
+      status: document.getElementById('status'),
+      codeMask: document.getElementById('codeMask'),
+      keypad: document.getElementById('keypad'),
+      flash: document.getElementById('flash'),
+      glitch: document.getElementById('glitch'),
+      glitchCanvas: document.getElementById('glitchCanvas'),
+      videoOverlay: document.getElementById('videoOverlay'),
+      videoSkipButton: document.getElementById('videoSkipButton'),
+      gameOverOverlay: document.getElementById('gameOverOverlay'),
+      gameOverText: document.getElementById('gameOverText'),
+      introOverlay: document.getElementById('introOverlay'),
+      adminOverlay: document.getElementById('adminOverlay'),
+      admin: {
+        minutes: document.getElementById('minutes'),
+        seconds: document.getElementById('seconds'),
+        code: document.getElementById('code'),
+        vid1: document.getElementById('vid1'),
+        vidIntro: document.getElementById('vidIntro'),
+        vidSuccess: document.getElementById('vidSuccess'),
+        vid2: document.getElementById('vid2'),
+        vid3: document.getElementById('vid3'),
+        videoTimeout: document.getElementById('videoTimeout'),
+        msgTitle: document.getElementById('msgTitle'),
+        msgIdle: document.getElementById('msgIdle'),
+        msgSuccess: document.getElementById('msgSuccess'),
+        msgFailure: document.getElementById('msgFailure'),
+        msgGameOver: document.getElementById('msgGameOver'),
+        saveStart: document.getElementById('adminSaveStart'),
+        close: document.getElementById('adminClose'),
+      },
+    };
+
+    const state = {
+      settings: null,
+      remainingSeconds: 0,
+      originalSeconds: 0,
+      timerId: null,
+      timeouts: 0,
+      codeBuffer: '',
+      audioCtx: null,
+      alarmOsc: null,
+      wakeLock: null,
+      yt: {
+        apiReady: false,
+        player: null,
+        readyResolve: null,
+        readyPromise: null,
+      },
+      adminHold: {
+        starDown: false,
+        holdTimer: null,
+        startedAt: 0,
+      },
+      successLoopId: null,
+      glitchCtx: null,
+      minimumTimeAfterThirdTimeout: null, // Store the time after 3rd timeout to preserve it
+    };
+
+    // Utilities
+    function loadSettings() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+        const parsed = JSON.parse(raw);
+        // merge shallowly with defaults to ensure new fields exist
+        return {
+          ...DEFAULTS,
+          ...parsed,
+          messages: { ...DEFAULTS.messages, ...(parsed.messages || {}) },
+          penaltyVideoIds: (parsed.penaltyVideoIds || DEFAULTS.penaltyVideoIds).slice(0, 3),
+          videoTimeout: parsed.videoTimeout || DEFAULTS.videoTimeout,
+          introVideoId: (parsed && Object.prototype.hasOwnProperty.call(parsed, 'introVideoId'))
+            ? parsed.introVideoId
+            : DEFAULTS.introVideoId,
+          successVideoId: (parsed && Object.prototype.hasOwnProperty.call(parsed, 'successVideoId'))
+            ? parsed.successVideoId
+            : DEFAULTS.successVideoId,
+        };
+      } catch {
+        return JSON.parse(JSON.stringify(DEFAULTS));
+      }
+    }
+    function saveSettings(s) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    }
+    function fmtTime(total) {
+      total = Math.max(0, Math.floor(total));
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      if (h > 0) {
+        return [h, m, s].map((v, i) => i === 0 ? String(v) : String(v).padStart(2, '0')).join(':');
+      } else {
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+      }
+    }
+    // 7-segment digit patterns (a, b, c, d, e, f, g)
+    const SEGMENT_PATTERNS = {
+      '0': [1,1,1,1,1,1,0],
+      '1': [0,1,1,0,0,0,0],
+      '2': [1,1,0,1,1,0,1],
+      '3': [1,1,1,1,0,0,1],
+      '4': [0,1,1,0,0,1,1],
+      '5': [1,0,1,1,0,1,1],
+      '6': [1,0,1,1,1,1,1],
+      '7': [1,1,1,0,0,0,0],
+      '8': [1,1,1,1,1,1,1],
+      '9': [1,1,1,1,0,1,1],
+      ':': null, // Special handling
+      ' ': [0,0,0,0,0,0,0]
+    };
+    function createSegmentDigit(digit) {
+      const div = document.createElement('div');
+      div.className = 'segment-digit';
+      if (digit === ':') {
+        const colon = document.createElement('div');
+        colon.className = 'segment-colon';
+        colon.innerHTML = '<div class="segment-dot"></div><div class="segment-dot"></div>';
+        return colon;
+      }
+      const pattern = SEGMENT_PATTERNS[digit] || SEGMENT_PATTERNS[' '];
+      const segments = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+      segments.forEach((seg, i) => {
+        const segEl = document.createElement('div');
+        segEl.className = `segment segment-${seg}`;
+        if (pattern[i]) {
+          segEl.classList.add('on');
+        }
+        div.appendChild(segEl);
+      });
+      return div;
+    }
+    function renderSegmentDisplay(timeStr) {
+      const container = el.time;
+      container.innerHTML = '';
+      const display = document.createElement('div');
+      display.className = 'segment-display';
+      for (let i = 0; i < timeStr.length; i++) {
+        display.appendChild(createSegmentDigit(timeStr[i]));
+      }
+      container.appendChild(display);
+    }
+    function clamp01(x) { return Math.max(0, Math.min(1, x)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function lerpColor(a, b, t) {
+      const pa = [parseInt(a.slice(1,3),16), parseInt(a.slice(3,5),16), parseInt(a.slice(5,7),16)];
+      const pb = [parseInt(b.slice(1,3),16), parseInt(b.slice(3,5),16), parseInt(b.slice(5,7),16)];
+      const r = Math.round(lerp(pa[0], pb[0], t)).toString(16).padStart(2,'0');
+      const g = Math.round(lerp(pa[1], pb[1], t)).toString(16).padStart(2,'0');
+      const bl = Math.round(lerp(pa[2], pb[2], t)).toString(16).padStart(2,'0');
+      return '#' + r + g + bl;
+    }
+
+    // Audio
+    function ensureAudio() {
+      if (!state.audioCtx) {
+        try {
+          state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch {}
+      }
+    }
+    function beep() {
+      ensureAudio();
+      if (!state.audioCtx) return;
+      const ctx = state.audioCtx;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.12);
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      o.stop(ctx.currentTime + 0.14);
+    }
+    function successSound() {
+      ensureAudio();
+      if (!state.audioCtx) return;
+      const ctx = state.audioCtx;
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      const now = ctx.currentTime;
+      const duration = 0.12;
+      const gap = 0.04;
+      notes.forEach((freq, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = freq;
+        const t0 = now + i * (duration + gap);
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(0.2, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+        o.connect(g).connect(ctx.destination);
+        o.start(t0);
+        o.stop(t0 + duration + 0.02);
+      });
+    }
+    function buzz() {
+      ensureAudio();
+      if (!state.audioCtx) return;
+      const ctx = state.audioCtx;
+      // Create a harsh buzzer sound with multiple oscillators
+      const o1 = ctx.createOscillator();
+      const o2 = ctx.createOscillator();
+      const g = ctx.createGain();
+      
+      // Two oscillators for a harsher buzzer sound
+      o1.type = 'sawtooth';
+      o1.frequency.value = 200;
+      o2.type = 'square';
+      o2.frequency.value = 400;
+      
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.6);
+      
+      o1.connect(g);
+      o2.connect(g);
+      g.connect(ctx.destination);
+      
+      o1.start();
+      o2.start();
+      o1.stop(ctx.currentTime + 0.62);
+      o2.stop(ctx.currentTime + 0.62);
+    }
+    function startAlarm() {
+      ensureAudio();
+      if (!state.audioCtx || state.alarmOsc) return;
+      const ctx = state.audioCtx;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'square';
+      o.frequency.value = 520;
+      g.gain.value = 0.15;
+      o.connect(g).connect(ctx.destination);
+      o.start();
+      state.alarmOsc = { o, g };
+    }
+    function stopAlarm() {
+      if (state.alarmOsc) {
+        const { o, g } = state.alarmOsc;
+        try {
+          const ctx = state.audioCtx;
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+          o.stop(ctx.currentTime + 0.25);
+        } catch {}
+        state.alarmOsc = null;
+      }
+    }
+    // TTS
+    function speak(text) {
+      if (!text) return;
+      try {
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 1;
+        u.pitch = 0.9;
+        u.volume = 1;
+        u.lang = 'de-DE';
+        speechSynthesis.cancel();
+        speechSynthesis.speak(u);
+      } catch {}
+    }
+
+    // Wake Lock
+    async function requestWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          state.wakeLock = await navigator.wakeLock.request('screen');
+          state.wakeLock.addEventListener('release', () => {});
+        }
+      } catch {}
+    }
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && state.timerId) {
+        requestWakeLock();
+      }
+    });
+
+    // Timer and UI
+    function updateBackground() {
+      const p = clamp01(state.remainingSeconds / Math.max(1, state.originalSeconds));
+      // green -> yellow -> red
+      const c = p >= 0.5
+        ? lerpColor('#1db954', '#f1c40f', (1 - p) * 2)  // 1..0 maps to 0..1
+        : lerpColor('#f1c40f', '#ff3b30', (0.5 - p) * 2);
+      document.documentElement.style.setProperty('--bg-color', c);
+      // flash below 25%
+      const flash = p < 0.25 ? (0.12 + (0.25 - p) * 0.6) : 0;
+      document.documentElement.style.setProperty('--flash-opacity', flash.toFixed(3));
+      // glitch intensity grows as time runs out (0% at 100% time, 100% at 0% time)
+      const glitch = (1 - p) * 1.0; // Max 100% opacity for maximum effect
+      document.documentElement.style.setProperty('--glitch-opacity', glitch.toFixed(3));
+    }
+    function flashScreen() {
+      // Flash multiple times (5 flashes)
+      const flashes = 5;
+      const delay = 150; // milliseconds between flashes
+      
+      for (let i = 0; i < flashes; i++) {
+        setTimeout(() => {
+          const flash = document.createElement('div');
+          flash.className = 'screen-flash';
+          document.body.appendChild(flash);
+          setTimeout(() => flash.remove(), 150);
+        }, i * delay);
+      }
+    }
+    function flashGreen() {
+      const flash = document.createElement('div');
+      flash.className = 'screen-flash success';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 200);
+    }
+    function setBackgroundGreen() {
+      document.documentElement.style.setProperty('--bg-color', '#1db954');
+    }
+    function startSuccessLoop() {
+      if (state.successLoopId) return;
+      // immediate cue
+      flashGreen();
+      beep();
+      state.successLoopId = setInterval(() => {
+        flashGreen();
+        beep();
+      }, 500);
+    }
+    function stopSuccessLoop() {
+      if (state.successLoopId) {
+        clearInterval(state.successLoopId);
+        state.successLoopId = null;
+      }
+    }
+    // Glitch canvas helpers
+    function ensureGlitchCanvas() {
+      const c = el.glitchCanvas;
+      if (!c) return;
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const w = Math.floor(window.innerWidth * dpr);
+      const h = Math.floor(window.innerHeight * dpr);
+      if (c.width !== w || c.height !== h) {
+        c.width = w;
+        c.height = h;
+      }
+      if (!state.glitchCtx) {
+        state.glitchCtx = c.getContext('2d', { alpha: true });
+      }
+      state.glitchCtx.setTransform(1, 0, 0, 1, 0, 0);
+      state.glitchCtx.imageSmoothingEnabled = false;
+    }
+    function runGlitch(totalMs = 1200) {
+      ensureGlitchCanvas();
+      const c = el.glitchCanvas;
+      const ctx = state.glitchCtx;
+      if (!c || !ctx) return;
+      c.style.display = 'block';
+      const start = performance.now();
+      function drawFrame(now) {
+        const t = now - start;
+        const w = c.width;
+        const h = c.height;
+        ctx.clearRect(0, 0, w, h);
+        // base dim layer
+        ctx.fillStyle = 'rgba(0,0,0,0.25)';
+        ctx.fillRect(0, 0, w, h);
+        // horizontal bands with RGB splits
+        const bands = 16;
+        for (let i = 0; i < bands; i++) {
+          const bandH = Math.max(6, (h / bands) * (0.4 + Math.random() * 0.9));
+          const y = Math.random() * (h - bandH);
+          const shift = (Math.random() * 2 - 1) * (w * 0.03);
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.fillStyle = 'rgba(255,0,0,0.12)';
+          ctx.fillRect(shift, y, w, bandH);
+          ctx.fillStyle = 'rgba(0,255,0,0.10)';
+          ctx.fillRect(-shift * 0.7, y, w, bandH);
+          ctx.fillStyle = 'rgba(0,0,255,0.10)';
+          ctx.fillRect(shift * 0.5, y, w, bandH);
+          ctx.globalCompositeOperation = 'source-over';
+        }
+        // chunky blocks that "scramble"
+        const blocks = 70;
+        for (let i = 0; i < blocks; i++) {
+          const bw = Math.max(20, Math.random() * (w * 0.08));
+          const bh = Math.max(8, Math.random() * (h * 0.035));
+          const x = Math.random() * (w - bw);
+          const y = Math.random() * (h - bh);
+          const hue = Math.floor(Math.random() * 360);
+          ctx.fillStyle = `hsla(${hue}, 60%, 60%, 0.08)`;
+          ctx.fillRect(x, y, bw, bh);
+          // slight offset overlay
+          ctx.fillStyle = `hsla(${(hue + 180) % 360}, 60%, 60%, 0.06)`;
+          ctx.fillRect(x + (Math.random() * 12 - 6), y, bw, bh);
+        }
+        // scanline sparkle noise
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        for (let i = 0; i < 400; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const s = Math.random() * 2 + 0.5;
+          ctx.fillRect(x, y, s, s);
+        }
+        if (t < totalMs) {
+          requestAnimationFrame(drawFrame);
+        } else {
+          c.style.display = 'none';
+        }
+      }
+      requestAnimationFrame(drawFrame);
+    }
+    // Glitch transition pulse (used before and after video overlay)
+    function glitchPulse(totalMs = 600) {
+      try {
+        el.glitch.classList.add('takeover');
+        runGlitch(totalMs);
+        setTimeout(() => {
+          el.glitch.classList.remove('takeover');
+        }, totalMs);
+      } catch {}
+    }
+    function setStatus(text) {
+      el.status.textContent = text || '';
+    }
+    function setTitle(text) {
+      el.title.textContent = text || '';
+      document.title = text || 'Bomb Defusal';
+    }
+    function setGameOverText(text) {
+      el.gameOverText.textContent = text || 'FAILED';
+    }
+    function setCodeMask(len) {
+      const mask = '•'.repeat(len) + ' '.repeat(Math.max(0, 4 - len));
+      el.codeMask.textContent = mask;
+    }
+    function renderTime() {
+      const timeStr = fmtTime(state.remainingSeconds);
+      renderSegmentDisplay(timeStr);
+      updateBackground();
+    }
+    function clearTimer() {
+      if (state.timerId) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+    }
+    function startTimer() {
+      clearTimer();
+      renderTime();
+      requestWakeLock();
+      state.timerId = setInterval(() => {
+        state.remainingSeconds -= 1;
+        if (state.remainingSeconds >= 0) {
+          renderTime();
+          beep();
+        }
+        if (state.remainingSeconds <= 0) {
+          clearTimer();
+          onTimeout();
+        }
+      }, 1000);
+    }
+    function stopAllSounds() {
+      stopAlarm();
+      // beeps are short; nothing to stop
+      try { speechSynthesis.cancel(); } catch {}
+    }
+
+    // Penalties and videos
+    function onTimeout() {
+      state.timeouts += 1;
+      if (state.timeouts <= 2) {
+        // First 2 timeouts: reduce time and play corresponding video
+        const idx = state.timeouts - 1;
+        const vid = state.settings.penaltyVideoIds[idx] || '';
+        playPenaltyVideo(vid).then(() => {
+          const fractions = [0.5, 0.25];
+          resetToFraction(fractions[idx]);
+          // After 2nd timeout, store the minimum time
+          if (state.timeouts === 2) {
+            state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
+          }
+          startTimer();
+        }).catch(() => {
+          // if video fails, still apply penalty and continue
+          const fractions = [0.5, 0.25];
+          resetToFraction(fractions[idx]);
+          // After 2nd timeout, store the minimum time
+          if (state.timeouts === 2) {
+            state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
+          }
+          startTimer();
+        });
+      } else {
+        // After 2 timeouts: cycle through timeout videos without reducing time
+        const cycleIdx = (state.timeouts - 3) % 3; // Cycles 0, 1, 2, 0, 1, 2...
+        const vid = state.settings.penaltyVideoIds[cycleIdx] || '';
+        playPenaltyVideo(vid).then(() => {
+          // Restore to the minimum time from 2nd timeout (never reduce further)
+          if (state.minimumTimeAfterThirdTimeout !== null) {
+            state.remainingSeconds = state.minimumTimeAfterThirdTimeout;
+          } else {
+            // Fallback: calculate it if not stored (25% of original)
+            state.remainingSeconds = Math.max(1, Math.floor(state.originalSeconds * 0.25));
+            state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
+          }
+          renderTime();
+          setStatus(state.settings.messages.idle);
+          setCodeMask(0);
+          startTimer();
+        }).catch(() => {
+          // if video fails, still continue
+          if (state.minimumTimeAfterThirdTimeout !== null) {
+            state.remainingSeconds = state.minimumTimeAfterThirdTimeout;
+          } else {
+            state.remainingSeconds = Math.max(1, Math.floor(state.originalSeconds * 0.25));
+            state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
+          }
+          renderTime();
+          setStatus(state.settings.messages.idle);
+          setCodeMask(0);
+          startTimer();
+        });
+      }
+    }
+    function resetToFraction(frac) {
+      state.remainingSeconds = Math.max(1, Math.floor(state.originalSeconds * frac));
+      renderTime();
+      setStatus(state.settings.messages.idle);
+      setCodeMask(0);
+    }
+
+    // YouTube
+    function ensureYouTubeApi() {
+      if (state.yt.readyPromise) return state.yt.readyPromise;
+      state.yt.readyPromise = new Promise((resolve) => {
+        state.yt.readyResolve = resolve;
+      });
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+      window.onYouTubeIframeAPIReady = () => {
+        state.yt.apiReady = true;
+        // Create on-demand
+        resolveYT();
+      };
+      function resolveYT() {
+        if (state.yt.readyResolve) {
+          state.yt.readyResolve();
+          state.yt.readyResolve = null;
+        }
+      }
+      return state.yt.readyPromise;
+    }
+    // YouTube - Uses IFrame API to detect video end (requires HTTP server)
+    // Falls back to timeout if API fails
+    function playPenaltyVideo(videoId, showSkip = false) {
+      if (!videoId || videoId.trim() === '') {
+        console.warn('No video ID provided');
+        return Promise.resolve();
+      }
+      
+      // Clean video ID - extract from various formats, but remove si parameter
+      // The si parameter can cause Error 153, so we'll use just the video ID
+      let cleanId = videoId.trim();
+      
+      // If it's a full embed URL: https://www.youtube.com/embed/_asNhzXq72w?si=...
+      if (cleanId.includes('youtube.com/embed/')) {
+        const match = cleanId.match(/embed\/([^"?]+)/);
+        if (match) {
+          cleanId = match[1]; // Just the video ID, ignore si parameter
+        }
+      } 
+      // If it's a watch URL: https://www.youtube.com/watch?v=_asNhzXq72w
+      else if (cleanId.includes('youtube.com/watch')) {
+        const urlParams = new URLSearchParams(cleanId.split('?')[1] || '');
+        cleanId = urlParams.get('v') || '';
+      }
+      // If it has si parameter, strip it out
+      else if (cleanId.includes('?si=')) {
+        cleanId = cleanId.split('?')[0]; // Just the video ID part
+      }
+      // Just extract the ID part
+      else {
+        cleanId = cleanId.split(/[\/\?=&]/)[0];
+      }
+      
+      if (!cleanId || cleanId.length < 10) {
+        console.warn('Invalid video ID:', videoId, '-> cleaned to:', cleanId);
+        return Promise.resolve();
+      }
+      
+      // Pulse glitch as if transmission is being hijacked
+      glitchPulse(1200);
+      
+      el.videoOverlay.classList.add('show');
+      // Show or hide skip button
+      if (showSkip && el.videoSkipButton) {
+        el.videoSkipButton.classList.add('show');
+      } else if (el.videoSkipButton) {
+        el.videoSkipButton.classList.remove('show');
+        el.videoSkipButton.onclick = null; // Clear handler when not showing
+      }
+      const container = document.getElementById('playerContainer');
+      if (!container) {
+        el.videoOverlay.classList.remove('show');
+        return Promise.resolve();
+      }
+      
+      // Clear container and any existing player
+      container.innerHTML = '';
+      if (state.yt.player) {
+        try {
+          state.yt.player.destroy();
+        } catch (e) {
+          console.warn('Error destroying previous player:', e);
+        }
+        state.yt.player = null;
+      }
+      
+      // Return promise that resolves when video ends or times out
+      return new Promise((resolve) => {
+        let resolved = false;
+        let timeoutId = null;
+        function fallbackIframe() {
+          try {
+            container.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.width = '100%';
+            iframe.height = '100%';
+            iframe.style.width = '100vw';
+            iframe.style.height = '100vh';
+            iframe.style.border = 'none';
+            iframe.allow = 'autoplay; encrypted-media; fullscreen';
+            iframe.allowFullscreen = true;
+            iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1`;
+            container.appendChild(iframe);
+          } catch (e) {
+            console.warn('Error creating fallback iframe:', e);
+          }
+        }
+        
+        function done() {
+          if (!resolved) {
+            resolved = true;
+            if (timeoutId) clearTimeout(timeoutId);
+            // Hide skip button
+            if (el.videoSkipButton) {
+              el.videoSkipButton.classList.remove('show');
+            }
+            el.videoOverlay.classList.remove('show');
+            if (state.yt.player) {
+              try {
+                state.yt.player.destroy();
+              } catch (e) {
+                console.warn('Error destroying player:', e);
+              }
+              state.yt.player = null;
+            }
+            container.innerHTML = '';
+            // Pulse glitch again as if returning control
+            glitchPulse(1200);
+            resolve();
+          }
+        }
+        
+        // Set up skip button click handler
+        if (showSkip && el.videoSkipButton) {
+          el.videoSkipButton.onclick = () => {
+            done();
+          };
+        }
+        
+        // Set up timeout fallback (default 60 seconds)
+        const timeoutMs = (state.settings.videoTimeout || 60) * 1000;
+        timeoutId = setTimeout(() => {
+          if (!resolved) {
+            console.log('Video timeout reached, closing overlay');
+            done();
+          }
+        }, timeoutMs);
+        
+        // Try to use YouTube IFrame API (requires HTTP server)
+        ensureYouTubeApi().then(() => {
+          if (!window.YT || !window.YT.Player) {
+            console.warn('YouTube API not available, using timeout fallback');
+            fallbackIframe();
+            return;
+          }
+          
+          try {
+            // Create YouTube player (start without videoId, load it in onReady)
+            state.yt.player = new window.YT.Player('playerContainer', {
+              width: '100%',
+              height: '100%',
+              playerVars: {
+                autoplay: 1,
+                // Don't mute - video is triggered by user interaction, so autoplay with sound should work
+                controls: 0,
+                rel: 0,
+                modestbranding: 1,
+                playsinline: 1,
+                fs: 1
+              },
+              events: {
+                onReady: (event) => {
+                  console.log('YouTube player ready, loading video:', cleanId);
+                  // Load the video (this will cue it)
+                  try {
+                    event.target.loadVideoById(cleanId, 0);
+                  } catch (e) {
+                    console.warn('Error loading video:', e);
+                  }
+                },
+                onStateChange: (event) => {
+                  // YT.PlayerState.ENDED = 0
+                  if (event.data === window.YT.PlayerState.ENDED) {
+                    console.log('Video ended');
+                    done();
+                  }
+                  // When video is cued (loaded), play it
+                  if (event.data === window.YT.PlayerState.CUED) {
+                    console.log('Video cued, starting playback');
+                    try {
+                      event.target.playVideo();
+                    } catch (e) {
+                      console.warn('Error playing video:', e);
+                    }
+                  }
+                  // Log when video starts playing for debugging
+                  if (event.data === window.YT.PlayerState.PLAYING) {
+                    console.log('Video started playing');
+                  }
+                  // Log other states for debugging
+                  if (event.data === window.YT.PlayerState.BUFFERING) {
+                    console.log('Video buffering');
+                  }
+                },
+                onError: (event) => {
+                  console.warn('YouTube player error:', event.data);
+                  // On error, fall back to simple iframe
+                  fallbackIframe();
+                }
+              }
+            });
+          } catch (e) {
+            console.warn('Error creating YouTube player:', e);
+            // Fall back to simple iframe
+            fallbackIframe();
+          }
+        }).catch((error) => {
+          console.warn('Failed to load YouTube API:', error);
+          // Fall back to timeout - create simple iframe
+          fallbackIframe();
+        });
+      });
+    }
+
+    // Game states
+    function success() {
+      clearTimer();
+      stopAllSounds();
+      setStatus(state.settings.messages.success);
+      successSound();
+      flashGreen();
+      setBackgroundGreen();
+      // Announce success in German
+      const successTTS = 'Erfolgreiche Codeeingabe. Gigasprudel 3000 deaktiviert.';
+      speak(successTTS);
+      setStatus(successTTS);
+      // Continue success beeping/flashing until the video starts
+      startSuccessLoop();
+      // Determine final video: use only configured success video
+      const vid = (state.settings.successVideoId || '').trim();
+      if (vid) {
+        // wait ~10s before playing the video; keep success loop running in the meantime
+        setTimeout(() => {
+          try {
+            stopSuccessLoop();
+            playPenaltyVideo(vid).catch(() => {});
+          } catch {}
+        }, 10000);
+      } else {
+        console.warn('No success video configured. Set it in Admin → Success YouTube Video ID.');
+      }
+    }
+    function gameOver() {
+      clearTimer();
+      setGameOverText(state.settings.messages.gameOver);
+      el.gameOverOverlay.classList.add('show');
+      startAlarm();
+    }
+    function resetUIForRun() {
+      el.gameOverOverlay.classList.remove('show');
+      stopAllSounds();
+      setStatus(state.settings.messages.idle);
+      setCodeMask(0);
+    }
+
+    // Keypad handling & admin gesture
+    function onKeyPress(value) {
+      if (value === '*' || value === '#') {
+        // handled for admin gesture only
+        return;
+      }
+      if (!/^[0-9]$/.test(value)) return;
+      ensureAudio();
+      state.codeBuffer += value;
+      state.codeBuffer = state.codeBuffer.slice(0, 4);
+      setCodeMask(state.codeBuffer.length);
+      if (state.codeBuffer.length === 4) {
+        const ok = state.codeBuffer === String(state.settings.successCode);
+        if (ok) {
+          success();
+        } else {
+          buzz();
+          flashScreen();
+          const lines = (state.settings.messages && state.settings.messages.failureLines) || [];
+          const say = (lines.length ? lines[Math.floor(Math.random() * lines.length)] : state.settings.messages.failureTTS);
+          speak(say);
+          setStatus(say);
+          state.codeBuffer = '';
+          setCodeMask(0);
+        }
+      }
+    }
+    function setupKeypad() {
+      el.keypad.addEventListener('click', (e) => {
+        const btn = e.target.closest('.key');
+        if (!btn) return;
+        const v = btn.getAttribute('data-key');
+        onKeyPress(v);
+      });
+      // Touch/mouse hold detection for admin (* and #)
+      const starBtn = [...el.keypad.querySelectorAll('.key')].find(b => b.getAttribute('data-key') === '*');
+      const down = (key) => () => handleAdminGestureDown(key);
+      const up = (key) => () => handleAdminGestureUp(key);
+      ['mousedown','touchstart'].forEach(ev => {
+        starBtn.addEventListener(ev, down('*'), { passive: true });
+      });
+      ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev => {
+        starBtn.addEventListener(ev, up('*'), { passive: true });
+      });
+    }
+    function handleAdminGestureDown(key) {
+      if (key === '*') state.adminHold.starDown = true;
+      if (state.adminHold.starDown && !state.adminHold.holdTimer) {
+        state.adminHold.startedAt = Date.now();
+        state.adminHold.holdTimer = setTimeout(() => {
+          state.adminHold.holdTimer = null;
+          openAdmin();
+        }, 5000); // 5 seconds
+      }
+    }
+    function handleAdminGestureUp(key) {
+      if (key === '*') state.adminHold.starDown = false;
+      if (!state.adminHold.starDown && state.adminHold.holdTimer) {
+        clearTimeout(state.adminHold.holdTimer);
+        state.adminHold.holdTimer = null;
+      }
+    }
+
+    /* Keyboard admin gesture removed per requirements update */
+
+    // Admin UI
+    function openAdmin() {
+      // Populate fields
+      // Refresh from saved settings to reflect latest persisted values
+      state.settings = loadSettings();
+      const secs = state.settings.initialSeconds;
+      el.admin.minutes.value = Math.floor(secs / 60);
+      el.admin.seconds.value = Math.floor(secs % 60);
+      el.admin.code.value = String(state.settings.successCode);
+      el.admin.vid1.value = state.settings.penaltyVideoIds[0] || '';
+      el.admin.vidIntro.value = state.settings.introVideoId || '';
+      el.admin.vidSuccess.value = state.settings.successVideoId || '';
+      el.admin.vid2.value = state.settings.penaltyVideoIds[1] || '';
+      el.admin.vid3.value = state.settings.penaltyVideoIds[2] || '';
+      el.admin.videoTimeout.value = state.settings.videoTimeout || 60;
+      el.admin.msgTitle.value = state.settings.messages.title || '';
+      el.admin.msgIdle.value = state.settings.messages.idle || '';
+      el.admin.msgSuccess.value = state.settings.messages.success || '';
+      el.admin.msgFailure.value = state.settings.messages.failureTTS || '';
+      el.admin.msgGameOver.value = state.settings.messages.gameOver || '';
+      el.adminOverlay.classList.add('show');
+    }
+    function closeAdmin() {
+      el.adminOverlay.classList.remove('show');
+    }
+    function saveResetStart() {
+      const minutes = Math.max(0, Math.min(599, parseInt(el.admin.minutes.value || '0', 10) || 0));
+      const seconds = Math.max(0, Math.min(59, parseInt(el.admin.seconds.value || '0', 10) || 0));
+      const initialSeconds = minutes * 60 + seconds;
+      const successCode = (el.admin.code.value || '').replace(/\D/g, '').padStart(4, '0').slice(0, 4);
+      const penaltyVideoIds = [
+        (el.admin.vid1.value || '').trim(),
+        (el.admin.vid2.value || '').trim(),
+        (el.admin.vid3.value || '').trim(),
+      ];
+      const introVideoId = (el.admin.vidIntro.value || '').trim();
+      const successVideoId = (el.admin.vidSuccess.value || '').trim();
+      const videoTimeout = Math.max(10, Math.min(300, parseInt(el.admin.videoTimeout.value || '60', 10) || 60));
+      const messages = {
+        title: (el.admin.msgTitle.value || '').slice(0, 64),
+        idle: (el.admin.msgIdle.value || '').slice(0, 140),
+        success: (el.admin.msgSuccess.value || '').slice(0, 140),
+        failureTTS: (el.admin.msgFailure.value || DEFAULTS.messages.failureTTS).slice(0, 140),
+        gameOver: (el.admin.msgGameOver.value || '').slice(0, 140),
+        // Preserve witty failure lines so TTS keeps using them after save
+        failureLines: (state.settings && state.settings.messages && state.settings.messages.failureLines) || DEFAULTS.messages.failureLines,
+      };
+      // Ensure required fields
+      const finalInitial = initialSeconds > 0 ? initialSeconds : DEFAULTS.initialSeconds;
+      const finalCode = successCode.length === 4 ? successCode : DEFAULTS.successCode;
+      state.settings = {
+        initialSeconds: finalInitial,
+        successCode: finalCode,
+        introVideoId,
+        successVideoId,
+        penaltyVideoIds,
+        videoTimeout,
+        messages,
+      };
+      saveSettings(state.settings);
+      closeAdmin();
+      // Reset and start
+      state.originalSeconds = state.settings.initialSeconds;
+      state.remainingSeconds = state.settings.initialSeconds;
+      state.timeouts = 0;
+      setTitle(state.settings.messages.title);
+      resetUIForRun();
+      renderTime();
+      // Hide intro overlay if it's showing and start game directly
+      el.introOverlay.classList.remove('show');
+      startTimer();
+    }
+    function setupAdmin() {
+      el.admin.close.addEventListener('click', closeAdmin);
+      el.admin.saveStart.addEventListener('click', saveResetStart);
+    }
+
+    // Initialization
+    function startGame() {
+      // Hide intro overlay
+      el.introOverlay.classList.remove('show');
+      // Start the timer and game
+      startTimer();
+    }
+    function handleIntroClick() {
+      // Hide intro overlay immediately
+      el.introOverlay.classList.remove('show');
+      const introVideoId = (state.settings.introVideoId || '').trim();
+      if (introVideoId) {
+        // Play intro video, then start game (show skip button for intro)
+        playPenaltyVideo(introVideoId, true).then(() => {
+          startGame();
+        }).catch(() => {
+          // If video fails, start game anyway
+          startGame();
+        });
+      } else {
+        // No intro video configured, start immediately
+        startGame();
+      }
+    }
+    function init() {
+      state.settings = loadSettings();
+      state.originalSeconds = state.settings.initialSeconds;
+      state.remainingSeconds = state.settings.initialSeconds;
+      state.timeouts = 0;
+      ensureGlitchCanvas();
+      window.addEventListener('resize', ensureGlitchCanvas);
+      setTitle(state.settings.messages.title);
+      setStatus(state.settings.messages.idle);
+      setCodeMask(0);
+      renderTime();
+      setupKeypad();
+      setupAdmin();
+      // Show intro overlay and wait for click
+      const introTitleEl = document.getElementById('introTitle');
+      if (introTitleEl) {
+        introTitleEl.textContent = state.settings.messages.title || 'Click to Start';
+      }
+      el.introOverlay.classList.add('show');
+      el.introOverlay.addEventListener('click', handleIntroClick, { once: true });
+    }
+    window.addEventListener('load', init);
+  </script>
+  <!-- YouTube IFrame API loaded dynamically in JS when needed -->
+</body>
+<!--
+Notes:
+- This is a single-file app. Add to Home screen for kiosk-like experience and pin the app.
+- Requires internet when penalties trigger (YouTube playback).
+-->
+</html>
+
+

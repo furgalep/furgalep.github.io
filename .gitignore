@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Arduino
+*.hex
+*.elf
+*.bin
+build/
+*.cache
+
+# Test files (optional - remove if you want to include them)
+test.html
+youtube-test.html
+
