@@ -1,0 +1,26 @@
+{
+  "name": "Gigasprudel 3000 Meistersender",
+  "short_name": "Gigasprudel",
+  "description": "Escape room bomb defusal timer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "landscape",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "0_0.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "0_1.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}
+
