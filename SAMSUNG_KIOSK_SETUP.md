@@ -18,17 +18,25 @@
    - The app will automatically attempt to enter fullscreen
    - If prompted, tap "Allow" to enter fullscreen mode
 
-## Method 2: Samsung Kiosk Mode (Samsung Knox)
+## Method 2: Android App Pinning (Built-in Alternative)
 
-If you have Samsung Knox or Enterprise features:
+Most Android devices have App Pinning, which locks the device to a single app:
 
-1. **Enable Kiosk Mode**:
-   - Go to **Settings** → **Advanced features** → **Kiosk mode**
-   - Or use **Samsung Knox** if available
+1. **Install the PWA** (from Method 1) first
 
-2. **Set the app as kiosk**:
-   - Add the PWA (from Method 1) to kiosk mode
-   - This will lock the device to only show this app
+2. **Enable App Pinning**:
+   - Go to **Settings** → **Security** → **App pinning** (or **Settings** → **Advanced features** → **App pinning**)
+   - Enable **"Lock device to pinned app"**
+
+3. **Pin the app**:
+   - Open the app from your home screen
+   - Tap the **Recent Apps** button (square icon)
+   - Swipe up on the app card and tap the **pin icon** (📌)
+   - The device is now locked to this app
+
+4. **To unpin**: Hold **Back** + **Recent Apps** buttons together
+
+**Note**: Samsung Knox Kiosk Mode is only available on enterprise/knox-enabled devices. App Pinning works on most Android devices.
 
 ## Method 3: Samsung Internet Fullscreen Mode
 
@@ -74,15 +82,33 @@ If you have Samsung Knox or Enterprise features:
 
 ## For True Kiosk Mode (Device Lockdown)
 
-If you need complete device lockdown:
+If you need complete device lockdown without any way to exit:
 
-1. **Use Samsung Knox** (if available on your device)
-2. **Use a third-party kiosk app** like:
-   - Fully Kiosk Browser
-   - KioWare
-   - SureLock
-3. **Configure Android Enterprise** (for managed devices)
+### Option 1: Third-Party Kiosk Apps (Recommended for non-Knox devices)
 
-These methods will lock the device to only show your app with no way to exit.
+Install a dedicated kiosk browser app:
+
+1. **Fully Kiosk Browser** (Free/Paid):
+   - Install from Google Play Store
+   - Set your URL: `https://furgalep.github.io/`
+   - Configure to hide navigation, disable exit, lock orientation
+   - Set as launcher app (replaces home screen)
+
+2. **KioWare** (Paid, enterprise-focused)
+
+3. **SureLock** (Paid, enterprise-focused)
+
+### Option 2: Samsung Knox (Enterprise Devices Only)
+
+- Only available on Samsung devices with Knox enabled
+- Usually found on enterprise/business models
+- If not available, use Option 1 or Method 2 (App Pinning)
+
+### Option 3: Android Enterprise (For Managed Devices)
+
+- Requires device enrollment in an MDM (Mobile Device Management) system
+- Typically used in business/enterprise environments
+
+**For most users**: Method 1 (PWA) + Method 2 (App Pinning) provides good kiosk-like behavior without additional software.
 
 
