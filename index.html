@@ -1887,6 +1887,8 @@
       state.originalSeconds = state.settings.initialSeconds;
       state.remainingSeconds = state.settings.initialSeconds;
       state.timeouts = 0;
+      // Preload YouTube API so it's ready when user clicks (fixes autoplay)
+      ensureYouTubeApi();
       ensureGlitchCanvas();
       window.addEventListener('resize', ensureGlitchCanvas);
       setTitle(state.settings.messages.title);
