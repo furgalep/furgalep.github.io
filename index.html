@@ -1093,6 +1093,17 @@
       }
     }
     // TTS
+    let germanVoice = null;
+    function loadGermanVoice() {
+      const voices = speechSynthesis.getVoices();
+      germanVoice = voices.find(v => v.lang === 'de-DE') 
+                 || voices.find(v => v.lang.startsWith('de'))
+                 || null;
+    }
+    if (typeof speechSynthesis !== 'undefined') {
+      loadGermanVoice();
+      speechSynthesis.onvoiceschanged = loadGermanVoice;
+    }
     function speak(text) {
       if (!text) return;
       try {
@@ -1101,6 +1112,7 @@
         u.pitch = 0.9;
         u.volume = 1;
         u.lang = 'de-DE';
+        if (germanVoice) u.voice = germanVoice;
         speechSynthesis.cancel();
         speechSynthesis.speak(u);
       } catch {}
