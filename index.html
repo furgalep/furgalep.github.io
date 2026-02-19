@@ -803,6 +803,7 @@
       </div>
       <div class="row">
         <button class="btn" id="adminClose">Close</button>
+        <button class="btn" id="adminResetDefaults">Reset to Defaults</button>
         <button class="btn primary" id="adminSaveStart">Save, Reset, and Start</button>
       </div>
     </div>
@@ -871,6 +872,7 @@
         msgGameOver: document.getElementById('msgGameOver'),
         saveStart: document.getElementById('adminSaveStart'),
         close: document.getElementById('adminClose'),
+        resetDefaults: document.getElementById('adminResetDefaults'),
       },
     };
 
@@ -1789,9 +1791,30 @@
       el.introOverlay.classList.remove('show');
       startTimer();
     }
+    function resetToDefaults() {
+      localStorage.removeItem(STORAGE_KEY);
+      state.settings = { ...DEFAULTS, messages: { ...DEFAULTS.messages } };
+      // Repopulate form with defaults
+      const secs = DEFAULTS.initialSeconds;
+      el.admin.minutes.value = Math.floor(secs / 60);
+      el.admin.seconds.value = Math.floor(secs % 60);
+      el.admin.code.value = DEFAULTS.successCode;
+      el.admin.vid1.value = DEFAULTS.penaltyVideoIds[0] || '';
+      el.admin.vid2.value = DEFAULTS.penaltyVideoIds[1] || '';
+      el.admin.vid3.value = DEFAULTS.penaltyVideoIds[2] || '';
+      el.admin.vidIntro.value = DEFAULTS.introVideoId || '';
+      el.admin.vidSuccess.value = DEFAULTS.successVideoId || '';
+      el.admin.videoTimeout.value = DEFAULTS.videoTimeout || 60;
+      el.admin.msgTitle.value = DEFAULTS.messages.title || '';
+      el.admin.msgIdle.value = DEFAULTS.messages.idle || '';
+      el.admin.msgSuccess.value = DEFAULTS.messages.success || '';
+      el.admin.msgFailure.value = DEFAULTS.messages.failureTTS || '';
+      el.admin.msgGameOver.value = DEFAULTS.messages.gameOver || '';
+    }
     function setupAdmin() {
       el.admin.close.addEventListener('click', closeAdmin);
       el.admin.saveStart.addEventListener('click', saveResetStart);
+      el.admin.resetDefaults.addEventListener('click', resetToDefaults);
     }
 
     // Fullscreen/Kiosk mode support
