@@ -46,8 +46,7 @@
     }
     .app {
       position: relative;
-      min-height: 100vh;
-      min-height: 100dvh; /* Dynamic viewport height for mobile */
+      height: 100%;
       display: grid;
       grid-template-rows: auto 1fr auto;
       gap: 1rem;
@@ -1490,7 +1489,7 @@
             iframe.style.border = 'none';
             iframe.allow = 'autoplay; encrypted-media; fullscreen';
             iframe.allowFullscreen = true;
-            iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&controls=0&rel=0&modestbranding=1&playsinline=1`;
+            iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1`;
             container.appendChild(iframe);
           } catch (e) {
             console.warn('Error creating fallback iframe:', e);
@@ -1552,7 +1551,7 @@
               height: '100%',
               playerVars: {
                 autoplay: 1,
-                // Don't mute - video is triggered by user interaction, so autoplay with sound should work
+                mute: 1, // Required for iOS autoplay; unmuted once playback starts
                 controls: 0,
                 rel: 0,
                 modestbranding: 1,
@@ -1584,9 +1583,10 @@
                       console.warn('Error playing video:', e);
                     }
                   }
-                  // Log when video starts playing for debugging
+                  // Unmute once playing starts (iOS autoplay requires muted, then we unmute)
                   if (event.data === window.YT.PlayerState.PLAYING) {
                     console.log('Video started playing');
+                    try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
                   }
                   // Log other states for debugging
                   if (event.data === window.YT.PlayerState.BUFFERING) {
