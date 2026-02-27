@@ -560,6 +560,22 @@
       border: 0;
       display: block;
     }
+    /* Preload slot: off-screen but in render tree so video buffers */
+    #preloadSlot {
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      z-index: 0;
+    }
+    #preloadSlot iframe {
+      width: 100vw;
+      height: 100vh;
+      border: 0;
+      display: block;
+    }
     /* Skip button for intro video */
     .video-skip-button {
       position: absolute;
@@ -720,6 +736,9 @@
     <div id="playerContainer"></div>
     <button id="videoSkipButton" class="video-skip-button" aria-label="Skip video">Skip</button>
   </div>
+
+  <!-- Off-screen preload slot: always in render tree so iframe can buffer, hidden via position -->
+  <div id="preloadSlot"></div>
 
   <div class="overlay" id="gameOverOverlay" aria-live="assertive" aria-atomic="true">
     <div class="gameover" id="gameOverText">FAILED</div>
@@ -890,6 +909,12 @@
         player: null,
         readyResolve: null,
         readyPromise: null,
+        preload: {
+          player: null,
+          videoId: null,
+          endCallback: null,
+          errorCallback: null,
+        },
       },
       adminHold: {
         starDown: false,
@@ -1329,7 +1354,10 @@
         // First 2 timeouts: reduce time and play corresponding video
         const idx = state.timeouts - 1;
         const vid = state.settings.penaltyVideoIds[idx] || '';
-        playPenaltyVideo(vid).then(() => {
+        // Preload the next penalty video so it's ready immediately
+        const nextIdx = (idx + 1) % 3;
+        const nextPreload = state.settings.penaltyVideoIds[nextIdx] || '';
+        playPenaltyVideo(vid, false, nextPreload).then(() => {
           const fractions = [0.5, 0.25];
           resetToFraction(fractions[idx]);
           // After 2nd timeout, store the minimum time
@@ -1351,7 +1379,9 @@
         // After 2 timeouts: cycle through timeout videos without reducing time
         const cycleIdx = (state.timeouts - 3) % 3; // Cycles 0, 1, 2, 0, 1, 2...
         const vid = state.settings.penaltyVideoIds[cycleIdx] || '';
-        playPenaltyVideo(vid).then(() => {
+        const nextCycleIdx = (cycleIdx + 1) % 3;
+        const nextPreload = state.settings.penaltyVideoIds[nextCycleIdx] || '';
+        playPenaltyVideo(vid, false, nextPreload).then(() => {
           // Restore to the minimum time from 2nd timeout (never reduce further)
           if (state.minimumTimeAfterThirdTimeout !== null) {
             state.remainingSeconds = state.minimumTimeAfterThirdTimeout;
@@ -1408,196 +1438,218 @@
       }
       return state.yt.readyPromise;
     }
+    // Extract a bare YouTube video ID from any URL/ID format
+    function extractVideoId(videoId) {
+      if (!videoId || videoId.trim() === '') return '';
+      let cleanId = videoId.trim();
+      if (cleanId.includes('youtube.com/embed/')) {
+        const match = cleanId.match(/embed\/([^"?]+)/);
+        if (match) cleanId = match[1];
+      } else if (cleanId.includes('youtube.com/watch')) {
+        const urlParams = new URLSearchParams(cleanId.split('?')[1] || '');
+        cleanId = urlParams.get('v') || '';
+      } else if (cleanId.includes('?si=')) {
+        cleanId = cleanId.split('?')[0];
+      } else {
+        cleanId = cleanId.split(/[\/\?=&]/)[0];
+      }
+      return (cleanId && cleanId.length >= 10) ? cleanId : '';
+    }
+
+    // Destroy any active preload player and reset preload state
+    function clearPreload() {
+      if (state.yt.preload.player) {
+        try { state.yt.preload.player.destroy(); } catch(e) {}
+        state.yt.preload.player = null;
+      }
+      state.yt.preload.videoId = null;
+      state.yt.preload.endCallback = null;
+      state.yt.preload.errorCallback = null;
+      const slot = document.getElementById('preloadSlot');
+      if (slot) {
+        slot.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;z-index:0;';
+        slot.innerHTML = '';
+      }
+    }
+
+    // Preload a video into the off-screen #preloadSlot so it buffers before it's needed.
+    // The preload player plays muted; when promoted to full-screen we just unmute it.
+    function preloadVideo(videoId) {
+      const cleanId = extractVideoId(videoId);
+      if (!cleanId) return;
+      if (state.yt.preload.videoId === cleanId) return; // already buffering this one
+
+      // Tear down any previous preload
+      if (state.yt.preload.player) {
+        try { state.yt.preload.player.destroy(); } catch(e) {}
+        state.yt.preload.player = null;
+      }
+      state.yt.preload.videoId = cleanId;
+      state.yt.preload.endCallback = null;
+      state.yt.preload.errorCallback = null;
+
+      const slot = document.getElementById('preloadSlot');
+      if (!slot) return;
+      slot.innerHTML = '<div id="preloadPlayer"></div>';
+
+      ensureYouTubeApi().then(() => {
+        if (!window.YT || !window.YT.Player) return;
+        if (state.yt.preload.videoId !== cleanId) return; // superseded
+        state.yt.preload.player = new window.YT.Player('preloadPlayer', {
+          videoId: cleanId,
+          width: '100vw',
+          height: '100vh',
+          playerVars: { autoplay: 1, mute: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, fs: 1 },
+          events: {
+            onStateChange: (event) => {
+              if (event.data === window.YT.PlayerState.ENDED) {
+                if (typeof state.yt.preload.endCallback === 'function') state.yt.preload.endCallback();
+              }
+            },
+            onError: () => {
+              if (typeof state.yt.preload.errorCallback === 'function') state.yt.preload.errorCallback();
+            },
+          },
+        });
+      }).catch(() => {});
+    }
+
     // YouTube - Uses IFrame API to detect video end (requires HTTP server)
     // Falls back to timeout if API fails
-    function playPenaltyVideo(videoId, showSkip = false) {
+    function playPenaltyVideo(videoId, showSkip = false, nextPreload = null) {
       if (!videoId || videoId.trim() === '') {
         console.warn('No video ID provided');
         return Promise.resolve();
       }
-      
-      // Clean video ID - extract from various formats, but remove si parameter
-      // The si parameter can cause Error 153, so we'll use just the video ID
-      let cleanId = videoId.trim();
-      
-      // If it's a full embed URL: https://www.youtube.com/embed/_asNhzXq72w?si=...
-      if (cleanId.includes('youtube.com/embed/')) {
-        const match = cleanId.match(/embed\/([^"?]+)/);
-        if (match) {
-          cleanId = match[1]; // Just the video ID, ignore si parameter
-        }
-      } 
-      // If it's a watch URL: https://www.youtube.com/watch?v=_asNhzXq72w
-      else if (cleanId.includes('youtube.com/watch')) {
-        const urlParams = new URLSearchParams(cleanId.split('?')[1] || '');
-        cleanId = urlParams.get('v') || '';
-      }
-      // If it has si parameter, strip it out
-      else if (cleanId.includes('?si=')) {
-        cleanId = cleanId.split('?')[0]; // Just the video ID part
-      }
-      // Just extract the ID part
-      else {
-        cleanId = cleanId.split(/[\/\?=&]/)[0];
-      }
-      
-      if (!cleanId || cleanId.length < 10) {
-        console.warn('Invalid video ID:', videoId, '-> cleaned to:', cleanId);
+
+      const cleanId = extractVideoId(videoId);
+      if (!cleanId) {
+        console.warn('Invalid video ID:', videoId);
         return Promise.resolve();
       }
       
       // Pulse glitch as if transmission is being hijacked
       glitchPulse(1200);
-      
+
       el.videoOverlay.classList.add('show');
       // Show or hide skip button
       if (showSkip && el.videoSkipButton) {
         el.videoSkipButton.classList.add('show');
       } else if (el.videoSkipButton) {
         el.videoSkipButton.classList.remove('show');
-        el.videoSkipButton.onclick = null; // Clear handler when not showing
+        el.videoSkipButton.onclick = null;
       }
-      const container = document.getElementById('playerContainer');
-      if (!container) {
-        el.videoOverlay.classList.remove('show');
-        return Promise.resolve();
-      }
-      
-      // Clear container and any existing player
-      container.innerHTML = '';
-      if (state.yt.player) {
-        try {
-          state.yt.player.destroy();
-        } catch (e) {
-          console.warn('Error destroying previous player:', e);
-        }
-        state.yt.player = null;
-      }
-      
-      // Return promise that resolves when video ends or times out
+
+      const usingPreload = !!(state.yt.preload.player && state.yt.preload.videoId === cleanId);
+
       return new Promise((resolve) => {
         let resolved = false;
         let timeoutId = null;
-        function fallbackIframe() {
-          try {
-            container.innerHTML = '';
-            const iframe = document.createElement('iframe');
-            iframe.width = '100%';
-            iframe.height = '100%';
-            iframe.style.width = '100vw';
-            iframe.style.height = '100vh';
-            iframe.style.border = 'none';
-            iframe.allow = 'autoplay; encrypted-media; fullscreen';
-            iframe.allowFullscreen = true;
-            iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1`;
-            container.appendChild(iframe);
-          } catch (e) {
-            console.warn('Error creating fallback iframe:', e);
-          }
-        }
-        
+
         function done() {
           if (!resolved) {
             resolved = true;
             if (timeoutId) clearTimeout(timeoutId);
-            // Hide skip button
-            if (el.videoSkipButton) {
-              el.videoSkipButton.classList.remove('show');
-            }
+            if (el.videoSkipButton) el.videoSkipButton.classList.remove('show');
             el.videoOverlay.classList.remove('show');
-            if (state.yt.player) {
-              try {
-                state.yt.player.destroy();
-              } catch (e) {
-                console.warn('Error destroying player:', e);
+
+            if (usingPreload) {
+              // Return preload slot off-screen and destroy its player
+              const slot = document.getElementById('preloadSlot');
+              if (slot) slot.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;z-index:0;';
+              state.yt.preload.endCallback = null;
+              state.yt.preload.errorCallback = null;
+              if (state.yt.preload.player) {
+                try { state.yt.preload.player.destroy(); } catch(e) {}
+                state.yt.preload.player = null;
               }
-              state.yt.player = null;
+              state.yt.preload.videoId = null;
+              if (slot) slot.innerHTML = '';
+            } else {
+              // Destroy the regular player
+              if (state.yt.player) {
+                try { state.yt.player.destroy(); } catch(e) {}
+                state.yt.player = null;
+              }
+              const container = document.getElementById('playerContainer');
+              if (container) container.innerHTML = '';
             }
-            container.innerHTML = '';
-            // Pulse glitch again as if returning control
+
             glitchPulse(1200);
+            // Start buffering the next video immediately
+            if (nextPreload) preloadVideo(nextPreload);
             resolve();
           }
         }
-        
-        // Set up skip button click handler
+
         if (showSkip && el.videoSkipButton) {
-          el.videoSkipButton.onclick = () => {
+          el.videoSkipButton.onclick = () => done();
+        }
+
+        const timeoutMs = (state.settings.videoTimeout || 60) * 1000;
+        timeoutId = setTimeout(() => { if (!resolved) done(); }, timeoutMs);
+
+        if (usingPreload) {
+          // Promote preload slot: expand to full-screen above the overlay
+          const slot = document.getElementById('preloadSlot');
+          if (slot) slot.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;z-index:25;';
+          // Video is already buffering/playing muted — just unmute it
+          try {
+            state.yt.preload.player.unMute();
+            state.yt.preload.player.setVolume(100);
+            state.yt.preload.player.playVideo(); // ensure playing (in case paused)
+          } catch(e) {}
+          // Wire up end/error callbacks on the existing preload player
+          state.yt.preload.endCallback = done;
+          state.yt.preload.errorCallback = () => {
+            // Preload player errored while showing — fall through to done
             done();
           };
+        } else {
+          // No matching preload — create a fresh player in #playerContainer
+          const container = document.getElementById('playerContainer');
+          if (!container) { el.videoOverlay.classList.remove('show'); resolve(); return; }
+
+          container.innerHTML = '';
+          if (state.yt.player) {
+            try { state.yt.player.destroy(); } catch(e) {}
+            state.yt.player = null;
+          }
+
+          function fallbackIframe() {
+            try {
+              container.innerHTML = '';
+              const iframe = document.createElement('iframe');
+              iframe.style.cssText = 'width:100vw;height:100vh;border:none;display:block;';
+              iframe.allow = 'autoplay; encrypted-media; fullscreen';
+              iframe.allowFullscreen = true;
+              iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1`;
+              container.appendChild(iframe);
+            } catch(e) {}
+          }
+
+          ensureYouTubeApi().then(() => {
+            if (!window.YT || !window.YT.Player) { fallbackIframe(); return; }
+            try {
+              state.yt.player = new window.YT.Player('playerContainer', {
+                videoId: cleanId,
+                width: '100%',
+                height: '100%',
+                playerVars: { autoplay: 1, mute: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, fs: 1 },
+                events: {
+                  onReady: (event) => { try { event.target.playVideo(); } catch(e) {} },
+                  onStateChange: (event) => {
+                    if (event.data === window.YT.PlayerState.ENDED) done();
+                    if (event.data === window.YT.PlayerState.PLAYING) {
+                      try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
+                    }
+                  },
+                  onError: () => fallbackIframe(),
+                },
+              });
+            } catch(e) { fallbackIframe(); }
+          }).catch(() => fallbackIframe());
         }
-        
-        // Set up timeout fallback (default 60 seconds)
-        const timeoutMs = (state.settings.videoTimeout || 60) * 1000;
-        timeoutId = setTimeout(() => {
-          if (!resolved) {
-            console.log('Video timeout reached, closing overlay');
-            done();
-          }
-        }, timeoutMs);
-        
-        // Try to use YouTube IFrame API (requires HTTP server)
-        ensureYouTubeApi().then(() => {
-          if (!window.YT || !window.YT.Player) {
-            console.warn('YouTube API not available, using timeout fallback');
-            fallbackIframe();
-            return;
-          }
-          
-          try {
-            // Create YouTube player (start without videoId, load it in onReady)
-            state.yt.player = new window.YT.Player('playerContainer', {
-              videoId: cleanId, // Pass videoId directly so iframe loads with autoplay=1&mute=1 in src (iOS-compatible)
-              width: '100%',
-              height: '100%',
-              playerVars: {
-                autoplay: 1,
-                mute: 1, // Required for iOS autoplay; unmuted once playback starts
-                controls: 0,
-                rel: 0,
-                modestbranding: 1,
-                playsinline: 1,
-                fs: 1
-              },
-              events: {
-                onReady: (event) => {
-                  console.log('YouTube player ready, video should autoplay:', cleanId);
-                  // Ensure playback starts (belt-and-suspenders for non-iOS)
-                  try { event.target.playVideo(); } catch(e) {}
-                },
-                onStateChange: (event) => {
-                  // YT.PlayerState.ENDED = 0
-                  if (event.data === window.YT.PlayerState.ENDED) {
-                    console.log('Video ended');
-                    done();
-                  }
-                  // Unmute once playing starts (iOS autoplay requires muted, then we unmute)
-                  if (event.data === window.YT.PlayerState.PLAYING) {
-                    console.log('Video started playing');
-                    try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
-                  }
-                  // Log other states for debugging
-                  if (event.data === window.YT.PlayerState.BUFFERING) {
-                    console.log('Video buffering');
-                  }
-                },
-                onError: (event) => {
-                  console.warn('YouTube player error:', event.data);
-                  // On error, fall back to simple iframe
-                  fallbackIframe();
-                }
-              }
-            });
-          } catch (e) {
-            console.warn('Error creating YouTube player:', e);
-            // Fall back to simple iframe
-            fallbackIframe();
-          }
-        }).catch((error) => {
-          console.warn('Failed to load YouTube API:', error);
-          // Fall back to timeout - create simple iframe
-          fallbackIframe();
-        });
       });
     }
 
@@ -1777,6 +1829,7 @@
       saveSettings(state.settings);
       closeAdmin();
       // Reset and start
+      clearPreload();
       state.originalSeconds = state.settings.initialSeconds;
       state.remainingSeconds = state.settings.initialSeconds;
       state.timeouts = 0;
@@ -1866,15 +1919,14 @@
       el.introOverlay.classList.remove('show');
       const introVideoId = (state.settings.introVideoId || '').trim();
       if (introVideoId) {
-        // Play intro video, then start game (show skip button for intro)
-        playPenaltyVideo(introVideoId, true).then(() => {
+        // Play intro video, then start game; preload penalty[0] so it's ready for first timeout
+        const nextPreload = state.settings.penaltyVideoIds[0] || '';
+        playPenaltyVideo(introVideoId, true, nextPreload).then(() => {
           startGame();
         }).catch(() => {
-          // If video fails, start game anyway
           startGame();
         });
       } else {
-        // No intro video configured, start immediately
         startGame();
       }
     }
@@ -1883,8 +1935,10 @@
       state.originalSeconds = state.settings.initialSeconds;
       state.remainingSeconds = state.settings.initialSeconds;
       state.timeouts = 0;
-      // Preload YouTube API so it's ready when user clicks (fixes autoplay)
+      // Preload YouTube API and start buffering the intro video so it plays instantly
       ensureYouTubeApi();
+      const introId = (state.settings.introVideoId || '').trim();
+      if (introId) preloadVideo(introId);
       ensureGlitchCanvas();
       window.addEventListener('resize', ensureGlitchCanvas);
       setTitle(state.settings.messages.title);
