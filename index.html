@@ -1676,6 +1676,14 @@
         const v = btn.getAttribute('data-key');
         onKeyPress(v);
       });
+      // On iOS, click delegation on <section> is unreliable — use touchend instead
+      el.keypad.addEventListener('touchend', (e) => {
+        const btn = e.target.closest('.key');
+        if (!btn) return;
+        e.preventDefault(); // Suppress the subsequent synthetic click (avoids double-fire)
+        const v = btn.getAttribute('data-key');
+        onKeyPress(v);
+      });
       // Touch/mouse hold detection for admin (* and #)
       const starBtn = [...el.keypad.querySelectorAll('.key')].find(b => b.getAttribute('data-key') === '*');
       const down = (key) => () => handleAdminGestureDown(key);
