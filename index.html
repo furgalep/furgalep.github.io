@@ -1547,6 +1547,7 @@
           try {
             // Create YouTube player (start without videoId, load it in onReady)
             state.yt.player = new window.YT.Player('playerContainer', {
+              videoId: cleanId, // Pass videoId directly so iframe loads with autoplay=1&mute=1 in src (iOS-compatible)
               width: '100%',
               height: '100%',
               playerVars: {
@@ -1560,28 +1561,15 @@
               },
               events: {
                 onReady: (event) => {
-                  console.log('YouTube player ready, loading video:', cleanId);
-                  // Load the video (this will cue it)
-                  try {
-                    event.target.loadVideoById(cleanId, 0);
-                  } catch (e) {
-                    console.warn('Error loading video:', e);
-                  }
+                  console.log('YouTube player ready, video should autoplay:', cleanId);
+                  // Ensure playback starts (belt-and-suspenders for non-iOS)
+                  try { event.target.playVideo(); } catch(e) {}
                 },
                 onStateChange: (event) => {
                   // YT.PlayerState.ENDED = 0
                   if (event.data === window.YT.PlayerState.ENDED) {
                     console.log('Video ended');
                     done();
-                  }
-                  // When video is cued (loaded), play it
-                  if (event.data === window.YT.PlayerState.CUED) {
-                    console.log('Video cued, starting playback');
-                    try {
-                      event.target.playVideo();
-                    } catch (e) {
-                      console.warn('Error playing video:', e);
-                    }
                   }
                   // Unmute once playing starts (iOS autoplay requires muted, then we unmute)
                   if (event.data === window.YT.PlayerState.PLAYING) {
