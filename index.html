@@ -578,7 +578,7 @@
     }
     /* Skip button for intro video */
     .video-skip-button {
-      position: absolute;
+      position: fixed;
       bottom: 1.5rem;
       right: 1.5rem;
       padding: 0.75rem 1.5rem;
@@ -589,7 +589,7 @@
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      z-index: 25;
+      z-index: 30;
       display: none;
       transition: all 0.2s ease;
       backdrop-filter: blur(4px);
@@ -725,7 +725,7 @@
         <button class="key" data-key="0">0</button>
         <button class="key" data-key="#">#</button>
       </section>
-      <footer class="footer">v4</footer>
+      <footer class="footer">v5</footer>
     </div>
   </div>
 
@@ -1504,7 +1504,12 @@
           events: {
             onStateChange: (event) => {
               if (event.data === window.YT.PlayerState.ENDED) {
-                if (typeof state.yt.preload.endCallback === 'function') state.yt.preload.endCallback();
+                if (typeof state.yt.preload.endCallback === 'function') {
+                  state.yt.preload.endCallback();
+                } else {
+                  // Still off-screen — loop so it's always playing-ready when promoted
+                  try { event.target.seekTo(0, true); event.target.playVideo(); } catch(e) {}
+                }
               }
             },
             onError: () => {
@@ -1594,11 +1599,12 @@
           // Promote preload slot: expand to full-screen above the overlay
           const slot = document.getElementById('preloadSlot');
           if (slot) slot.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;z-index:25;';
-          // Video is already buffering/playing muted — just unmute it
+          // Seek to beginning (video may have been playing for a while off-screen), then unmute
           try {
+            state.yt.preload.player.seekTo(0, true);
+            state.yt.preload.player.playVideo();
             state.yt.preload.player.unMute();
             state.yt.preload.player.setVolume(100);
-            state.yt.preload.player.playVideo(); // ensure playing (in case paused)
           } catch(e) {}
           // Wire up end/error callbacks on the existing preload player
           state.yt.preload.endCallback = done;
@@ -1979,6 +1985,13 @@
         introTitleEl.textContent = state.settings.messages.title || 'Click to Start';
       }
       el.introOverlay.classList.add('show');
+      // Use touchend for reliable iOS tap; preventDefault stops the subsequent click from double-firing
+      function handleIntroTouch(e) {
+        e.preventDefault();
+        el.introOverlay.removeEventListener('click', handleIntroClick);
+        handleIntroClick();
+      }
+      el.introOverlay.addEventListener('touchend', handleIntroTouch, { once: true });
       el.introOverlay.addEventListener('click', handleIntroClick, { once: true });
     }
     window.addEventListener('load', init);
