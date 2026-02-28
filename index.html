@@ -603,21 +603,29 @@
       border: 0;
       display: block;
     }
-    /* Preload slot: off-screen but in render tree so video buffers */
-    #preloadSlot {
-      position: fixed;
-      left: -9999px;
-      top: 0;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      z-index: 0;
+    /* "New Message Waiting" overlay content */
+    .new-msg-screen {
+      text-align: center;
+      color: var(--text);
     }
-    #preloadSlot iframe {
-      width: 100vw;
-      height: 100vh;
-      border: 0;
-      display: block;
+    .new-msg-icon {
+      font-size: clamp(3rem, 10vw, 5rem);
+      margin-bottom: 1.5rem;
+      animation: pulse 1s ease-in-out infinite;
+    }
+    .new-msg-title {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-shadow: 0 0 20px rgba(255, 59, 48, 0.6);
+      margin-bottom: 0.8rem;
+      animation: pulse 1s ease-in-out infinite;
+    }
+    .new-msg-subtitle {
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      color: var(--dim);
+      opacity: 0.8;
     }
     /* Skip button for intro video */
     .video-skip-button {
@@ -787,8 +795,14 @@
   <!-- Skip button lives outside all overlays so position:fixed z-index works on iOS -->
   <button id="videoSkipButton" class="video-skip-button" aria-label="Skip video">Skip</button>
 
-  <!-- Off-screen preload slot: always in render tree so iframe can buffer, hidden via position -->
-  <div id="preloadSlot"></div>
+  <!-- "New Message Waiting" tap-to-play overlay for timeout videos -->
+  <div class="overlay" id="newMsgOverlay">
+    <div class="new-msg-screen">
+      <div class="new-msg-icon">📡</div>
+      <div class="new-msg-title">New Message Waiting</div>
+      <div class="new-msg-subtitle">Tap anywhere to view</div>
+    </div>
+  </div>
 
   <div class="overlay" id="gameOverOverlay" aria-live="assertive" aria-atomic="true">
     <div class="gameover" id="gameOverText">FAILED</div>
@@ -879,7 +893,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v9';
+    const VERSION = 'v10';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -960,12 +974,6 @@
         player: null,
         readyResolve: null,
         readyPromise: null,
-        preload: {
-          player: null,
-          videoId: null,
-          endCallback: null,
-          errorCallback: null,
-        },
       },
       adminHold: {
         starDown: false,
@@ -1402,51 +1410,23 @@
     function onTimeout() {
       state.timeouts += 1;
       if (state.timeouts <= 2) {
-        // First 2 timeouts: reduce time and play corresponding video
         const idx = state.timeouts - 1;
         const vid = state.settings.penaltyVideoIds[idx] || '';
-        // Preload the next penalty video so it's ready immediately
-        const nextIdx = (idx + 1) % 3;
-        const nextPreload = state.settings.penaltyVideoIds[nextIdx] || '';
-        playPenaltyVideo(vid, false, nextPreload).then(() => {
-          const fractions = [0.5, 0.25];
-          resetToFraction(fractions[idx]);
-          // After 2nd timeout, store the minimum time
-          if (state.timeouts === 2) {
-            state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
-          }
+        const fracs = [0.5, 0.25];
+        const resume = () => {
+          resetToFraction(fracs[idx]);
+          if (state.timeouts === 2) state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
           startTimer();
-        }).catch(() => {
-          // if video fails, still apply penalty and continue
-          const fractions = [0.5, 0.25];
-          resetToFraction(fractions[idx]);
-          // After 2nd timeout, store the minimum time
-          if (state.timeouts === 2) {
-            state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
-          }
-          startTimer();
-        });
+        };
+        if (vid) {
+          showNewMessageOverlay(() => playPenaltyVideo(vid, false).then(resume).catch(resume));
+        } else {
+          resume();
+        }
       } else {
-        // After 2 timeouts: cycle through timeout videos without reducing time
-        const cycleIdx = (state.timeouts - 3) % 3; // Cycles 0, 1, 2, 0, 1, 2...
+        const cycleIdx = (state.timeouts - 3) % 3;
         const vid = state.settings.penaltyVideoIds[cycleIdx] || '';
-        const nextCycleIdx = (cycleIdx + 1) % 3;
-        const nextPreload = state.settings.penaltyVideoIds[nextCycleIdx] || '';
-        playPenaltyVideo(vid, false, nextPreload).then(() => {
-          // Restore to the minimum time from 2nd timeout (never reduce further)
-          if (state.minimumTimeAfterThirdTimeout !== null) {
-            state.remainingSeconds = state.minimumTimeAfterThirdTimeout;
-          } else {
-            // Fallback: calculate it if not stored (25% of original)
-            state.remainingSeconds = Math.max(1, Math.floor(state.originalSeconds * 0.25));
-            state.minimumTimeAfterThirdTimeout = state.remainingSeconds;
-          }
-          renderTime();
-          setStatus(state.settings.messages.idle);
-          setCodeMask(0);
-          startTimer();
-        }).catch(() => {
-          // if video fails, still continue
+        const resume = () => {
           if (state.minimumTimeAfterThirdTimeout !== null) {
             state.remainingSeconds = state.minimumTimeAfterThirdTimeout;
           } else {
@@ -1457,7 +1437,12 @@
           setStatus(state.settings.messages.idle);
           setCodeMask(0);
           startTimer();
-        });
+        };
+        if (vid) {
+          showNewMessageOverlay(() => playPenaltyVideo(vid, false).then(resume).catch(resume));
+        } else {
+          resume();
+        }
       }
     }
     function resetToFraction(frac) {
@@ -1507,91 +1492,34 @@
       return (cleanId && cleanId.length >= 10) ? cleanId : '';
     }
 
-    // Destroy any active preload player and reset preload state
-    function clearPreload() {
-      if (state.yt.preload.player) {
-        try { state.yt.preload.player.destroy(); } catch(e) {}
-        state.yt.preload.player = null;
+    // Show a "New Message Waiting" overlay requiring a tap before playing.
+    // onTap is called inside the tap handler (user gesture context) — iOS autoplay works.
+    function showNewMessageOverlay(onTap) {
+      const overlay = document.getElementById('newMsgOverlay');
+      if (!overlay) { onTap(); return; }
+      overlay.classList.add('show');
+      function handleTouch(e) {
+        e.preventDefault();
+        overlay.removeEventListener('click', handleClick);
+        overlay.classList.remove('show');
+        onTap();
       }
-      state.yt.preload.videoId = null;
-      state.yt.preload.endCallback = null;
-      state.yt.preload.errorCallback = null;
-      const slot = document.getElementById('preloadSlot');
-      if (slot) {
-        slot.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;z-index:0;';
-        slot.innerHTML = '';
+      function handleClick() {
+        overlay.classList.remove('show');
+        onTap();
       }
+      overlay.addEventListener('touchend', handleTouch, { once: true });
+      overlay.addEventListener('click', handleClick, { once: true });
     }
 
-    // Preload a video into the off-screen #preloadSlot so it buffers before it's needed.
-    // The preload player plays muted; when promoted to full-screen we just unmute it.
-    function preloadVideo(videoId) {
+    // YouTube — Play a video fullscreen, resolve promise when it ends (or times out)
+    function playPenaltyVideo(videoId, showSkip = false) {
+      if (!videoId || videoId.trim() === '') return Promise.resolve();
       const cleanId = extractVideoId(videoId);
-      if (!cleanId) return;
-      if (state.yt.preload.videoId === cleanId) return; // already buffering this one
+      if (!cleanId) return Promise.resolve();
 
-      // Tear down any previous preload
-      if (state.yt.preload.player) {
-        try { state.yt.preload.player.destroy(); } catch(e) {}
-        state.yt.preload.player = null;
-      }
-      state.yt.preload.videoId = cleanId;
-      state.yt.preload.endCallback = null;
-      state.yt.preload.errorCallback = null;
-
-      const slot = document.getElementById('preloadSlot');
-      if (!slot) return;
-      slot.innerHTML = '';
-
-      // Build the iframe manually so we control allow="autoplay" (YT API may omit it, iOS needs it).
-      // loop=1&playlist=cleanId keeps it looping forever with no JS playVideo() calls.
-      const preIframe = document.createElement('iframe');
-      preIframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
-      preIframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
-      preIframe.allowFullscreen = true;
-      const preOrigin = encodeURIComponent(location.origin);
-      preIframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&loop=1&playlist=${cleanId}&enablejsapi=1&origin=${preOrigin}`;
-      slot.appendChild(preIframe);
-
-      ensureYouTubeApi().then(() => {
-        if (!window.YT || !window.YT.Player) return;
-        if (state.yt.preload.videoId !== cleanId) return; // superseded
-        // Attach YT API to the already-loaded iframe for end-detection
-        state.yt.preload.player = new window.YT.Player(preIframe, {
-          events: {
-            onStateChange: (event) => {
-              if (event.data === window.YT.PlayerState.ENDED) {
-                // With loop=1 the player auto-restarts; we only care when promoted
-                if (typeof state.yt.preload.endCallback === 'function') state.yt.preload.endCallback();
-              }
-            },
-            onError: () => {
-              if (typeof state.yt.preload.errorCallback === 'function') state.yt.preload.errorCallback();
-            },
-          },
-        });
-      }).catch(() => {});
-    }
-
-    // YouTube - Uses IFrame API to detect video end (requires HTTP server)
-    // Falls back to timeout if API fails
-    function playPenaltyVideo(videoId, showSkip = false, nextPreload = null) {
-      if (!videoId || videoId.trim() === '') {
-        console.warn('No video ID provided');
-        return Promise.resolve();
-      }
-
-      const cleanId = extractVideoId(videoId);
-      if (!cleanId) {
-        console.warn('Invalid video ID:', videoId);
-        return Promise.resolve();
-      }
-      
-      // Pulse glitch as if transmission is being hijacked
       glitchPulse(1200);
-
       el.videoOverlay.classList.add('show');
-      // Show or hide skip button
       if (showSkip && el.videoSkipButton) {
         el.videoSkipButton.classList.add('show');
       } else if (el.videoSkipButton) {
@@ -1599,53 +1527,24 @@
         el.videoSkipButton.onclick = null;
       }
 
-      // Only use the preload if it's actually playing — iOS may have blocked JS-triggered resumption
-      let usingPreload = false;
-      if (state.yt.preload.player && state.yt.preload.videoId === cleanId) {
-        try {
-          const ps = state.yt.preload.player.getPlayerState();
-          usingPreload = (ps === window.YT.PlayerState.PLAYING || ps === window.YT.PlayerState.BUFFERING);
-        } catch(e) {}
-      }
-
       return new Promise((resolve) => {
         let resolved = false;
         let timeoutId = null;
 
         function done() {
-          if (!resolved) {
-            resolved = true;
-            if (timeoutId) clearTimeout(timeoutId);
-            if (el.videoSkipButton) el.videoSkipButton.classList.remove('show');
-            el.videoOverlay.classList.remove('show');
-
-            if (usingPreload) {
-              // Return preload slot off-screen and destroy its player
-              const slot = document.getElementById('preloadSlot');
-              if (slot) slot.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;z-index:0;';
-              state.yt.preload.endCallback = null;
-              state.yt.preload.errorCallback = null;
-              if (state.yt.preload.player) {
-                try { state.yt.preload.player.destroy(); } catch(e) {}
-                state.yt.preload.player = null;
-              }
-              state.yt.preload.videoId = null;
-              if (slot) slot.innerHTML = '';
-            } else {
-              // Destroy the regular player
-              if (state.yt.player) {
-                try { state.yt.player.destroy(); } catch(e) {}
-                state.yt.player = null;
-              }
-              const container = document.getElementById('playerContainer');
-              if (container) container.innerHTML = '';
-            }
-
-            glitchPulse(1200);
-            // Start buffering the next video immediately
-            if (nextPreload) preloadVideo(nextPreload);
-            resolve();
+          if (resolved) return;
+          resolved = true;
+          clearTimeout(timeoutId);
+          if (el.videoSkipButton) el.videoSkipButton.classList.remove('show');
+          el.videoOverlay.classList.remove('show');
+          if (state.yt.player) {
+            try { state.yt.player.destroy(); } catch(e) {}
+            state.yt.player = null;
           }
+          const container = document.getElementById('playerContainer');
+          if (container) container.innerHTML = '';
+          glitchPulse(1200);
+          resolve();
         }
 
         if (showSkip && el.videoSkipButton) {
@@ -1655,66 +1554,44 @@
         const timeoutMs = (state.settings.videoTimeout || 60) * 1000;
         timeoutId = setTimeout(() => { if (!resolved) done(); }, timeoutMs);
 
-        if (usingPreload) {
-          // Promote preload slot: expand to full-screen above the overlay
-          const slot = document.getElementById('preloadSlot');
-          if (slot) slot.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;z-index:25;';
-          // Video is already playing muted — just unmute it.
-          // Do NOT call seekTo/playVideo: iOS blocks JS-triggered play outside user gesture.
-          try {
-            state.yt.preload.player.unMute();
-            state.yt.preload.player.setVolume(100);
-          } catch(e) {}
-          // Wire up end/error callbacks on the existing preload player
-          state.yt.preload.endCallback = done;
-          state.yt.preload.errorCallback = () => {
-            // Preload player errored while showing — fall through to done
-            done();
-          };
-        } else {
-          // No matching preload — create a fresh player in #playerContainer
-          const container = document.getElementById('playerContainer');
-          if (!container) { el.videoOverlay.classList.remove('show'); resolve(); return; }
-
-          container.innerHTML = '';
-          if (state.yt.player) {
-            try { state.yt.player.destroy(); } catch(e) {}
-            state.yt.player = null;
-          }
-
-          // Build iframe manually so allow="autoplay" is set before it loads.
-          // The YT API (when it creates the iframe itself) may omit this attribute, breaking iOS autoplay.
-          function makeIframe() {
-            container.innerHTML = '';
-            const iframe = document.createElement('iframe');
-            iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
-            iframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
-            iframe.allowFullscreen = true;
-            const origin = encodeURIComponent(location.origin);
-            iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=${origin}`;
-            container.appendChild(iframe);
-            return iframe;
-          }
-
-          ensureYouTubeApi().then(() => {
-            try {
-              const iframe = makeIframe();
-              if (!window.YT || !window.YT.Player) return; // iframe still plays; timeout will close it
-              // Attach YT API to the already-created iframe for end-detection
-              state.yt.player = new window.YT.Player(iframe, {
-                events: {
-                  onStateChange: (event) => {
-                    if (event.data === window.YT.PlayerState.ENDED) done();
-                    if (event.data === window.YT.PlayerState.PLAYING) {
-                      try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
-                    }
-                  },
-                  onError: () => {}, // iframe already showing; let timeout handle it
-                },
-              });
-            } catch(e) { makeIframe(); }
-          }).catch(() => makeIframe());
+        const container = document.getElementById('playerContainer');
+        if (!container) { el.videoOverlay.classList.remove('show'); resolve(); return; }
+        container.innerHTML = '';
+        if (state.yt.player) {
+          try { state.yt.player.destroy(); } catch(e) {}
+          state.yt.player = null;
         }
+
+        // Use YT IFrame API to create the iframe — it sets allow="autoplay" correctly
+        ensureYouTubeApi().then(() => {
+          if (resolved) return;
+          if (!window.YT || !window.YT.Player) return; // let timeout handle it
+          const playerDiv = document.createElement('div');
+          container.appendChild(playerDiv);
+          state.yt.player = new window.YT.Player(playerDiv, {
+            videoId: cleanId,
+            playerVars: {
+              autoplay: 1,
+              mute: 1,
+              controls: 0,
+              rel: 0,
+              modestbranding: 1,
+              playsinline: 1,
+            },
+            events: {
+              onReady: (event) => {
+                try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
+              },
+              onStateChange: (event) => {
+                if (event.data === window.YT.PlayerState.PLAYING) {
+                  try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
+                }
+                if (event.data === window.YT.PlayerState.ENDED) done();
+              },
+              onError: () => { setTimeout(() => { if (!resolved) done(); }, 2000); },
+            },
+          });
+        }).catch(() => {});
       });
     }
 
@@ -1894,7 +1771,6 @@
       saveSettings(state.settings);
       closeAdmin();
       // Reset and start
-      clearPreload();
       state.originalSeconds = state.settings.initialSeconds;
       state.remainingSeconds = state.settings.initialSeconds;
       state.timeouts = 0;
@@ -1980,17 +1856,10 @@
       startTimer();
     }
     function handleIntroClick() {
-      // Hide intro overlay immediately
       el.introOverlay.classList.remove('show');
       const introVideoId = (state.settings.introVideoId || '').trim();
       if (introVideoId) {
-        // Play intro video, then start game; preload penalty[0] so it's ready for first timeout
-        const nextPreload = state.settings.penaltyVideoIds[0] || '';
-        playPenaltyVideo(introVideoId, true, nextPreload).then(() => {
-          startGame();
-        }).catch(() => {
-          startGame();
-        });
+        playPenaltyVideo(introVideoId, true).then(startGame).catch(startGame);
       } else {
         startGame();
       }
@@ -2027,10 +1896,8 @@
       state.originalSeconds = state.settings.initialSeconds;
       state.remainingSeconds = state.settings.initialSeconds;
       state.timeouts = 0;
-      // Preload YouTube API and start buffering the intro video so it plays instantly
+      // Pre-warm the YouTube API so it's ready when user taps
       ensureYouTubeApi();
-      const introId = (state.settings.introVideoId || '').trim();
-      if (introId) preloadVideo(introId);
       ensureGlitchCanvas();
       window.addEventListener('resize', ensureGlitchCanvas);
       setTitle(state.settings.messages.title);
