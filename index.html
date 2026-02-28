@@ -547,6 +547,42 @@
       vertical-align: middle;
       letter-spacing: 0.05em;
     }
+    /* Hold-to-replay intro button */
+    .replay-intro-btn {
+      position: fixed;
+      bottom: 0.6rem;
+      left: 0.6rem;
+      z-index: 5;
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 5px;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.6rem;
+      font-family: inherit;
+      padding: 0.35rem 0.7rem;
+      cursor: pointer;
+      overflow: hidden;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .replay-label {
+      position: relative;
+      z-index: 1;
+    }
+    .replay-fill {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.18);
+      transform: scaleX(0);
+      transform-origin: left;
+      pointer-events: none;
+    }
+    .replay-intro-btn.holding .replay-fill {
+      transform: scaleX(1);
+      transition: transform 3s linear;
+    }
     .intro-screen p {
       font-size: clamp(1rem, 3vw, 1.5rem);
       color: var(--dim);
@@ -735,6 +771,12 @@
     </div>
   </div>
 
+  <!-- Hold-to-replay intro button -->
+  <button id="replayIntroBtn" class="replay-intro-btn" aria-label="Hold to replay intro video">
+    <span class="replay-label">▶ Intro</span>
+    <span class="replay-fill"></span>
+  </button>
+
   <!-- Overlays -->
   <div class="flash" id="flash"></div>
   <div class="glitch" id="glitch"></div>
@@ -837,7 +879,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v6';
+    const VERSION = 'v7';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -1945,6 +1987,33 @@
         startGame();
       }
     }
+    function setupReplayIntroButton() {
+      const btn = document.getElementById('replayIntroBtn');
+      if (!btn) return;
+      let holdTimer = null;
+
+      function startHold() {
+        if (holdTimer) return;
+        // Force a reflow so the transition starts from scaleX(0)
+        btn.classList.remove('holding');
+        void btn.offsetWidth;
+        btn.classList.add('holding');
+        holdTimer = setTimeout(() => {
+          holdTimer = null;
+          btn.classList.remove('holding');
+          const introVideoId = (state.settings.introVideoId || '').trim();
+          if (introVideoId) playPenaltyVideo(introVideoId, true);
+        }, 3000);
+      }
+      function cancelHold() {
+        if (holdTimer) { clearTimeout(holdTimer); holdTimer = null; }
+        btn.classList.remove('holding');
+      }
+
+      btn.addEventListener('mousedown', startHold);
+      btn.addEventListener('touchstart', (e) => { e.preventDefault(); startHold(); }, { passive: false });
+      ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(ev => btn.addEventListener(ev, cancelHold));
+    }
     function init() {
       state.settings = loadSettings();
       state.originalSeconds = state.settings.initialSeconds;
@@ -1962,6 +2031,7 @@
       renderTime();
       setupKeypad();
       setupAdmin();
+      setupReplayIntroButton();
       
       // Kiosk mode: Prevent context menu, zoom, pull-to-refresh
       document.addEventListener('contextmenu', preventContextMenu);
