@@ -879,7 +879,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v8';
+    const VERSION = 'v9';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -1541,30 +1541,28 @@
 
       const slot = document.getElementById('preloadSlot');
       if (!slot) return;
-      slot.innerHTML = '<div id="preloadPlayer"></div>';
+      slot.innerHTML = '';
+
+      // Build the iframe manually so we control allow="autoplay" (YT API may omit it, iOS needs it).
+      // loop=1&playlist=cleanId keeps it looping forever with no JS playVideo() calls.
+      const preIframe = document.createElement('iframe');
+      preIframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+      preIframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
+      preIframe.allowFullscreen = true;
+      const preOrigin = encodeURIComponent(location.origin);
+      preIframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&loop=1&playlist=${cleanId}&enablejsapi=1&origin=${preOrigin}`;
+      slot.appendChild(preIframe);
 
       ensureYouTubeApi().then(() => {
         if (!window.YT || !window.YT.Player) return;
         if (state.yt.preload.videoId !== cleanId) return; // superseded
-        state.yt.preload.player = new window.YT.Player('preloadPlayer', {
-          videoId: cleanId,
-          width: '100vw',
-          height: '100vh',
-          playerVars: { autoplay: 1, mute: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, fs: 1 },
+        // Attach YT API to the already-loaded iframe for end-detection
+        state.yt.preload.player = new window.YT.Player(preIframe, {
           events: {
             onStateChange: (event) => {
               if (event.data === window.YT.PlayerState.ENDED) {
-                if (typeof state.yt.preload.endCallback === 'function') {
-                  state.yt.preload.endCallback();
-                } else {
-                  // Still off-screen — recreate the player so it autoplays fresh via src URL.
-                  // Do NOT call playVideo() here: iOS blocks JS-triggered play outside user gesture.
-                  const oldId = state.yt.preload.videoId;
-                  try { event.target.destroy(); } catch(e) {}
-                  state.yt.preload.player = null;
-                  state.yt.preload.videoId = null;
-                  preloadVideo(oldId);
-                }
+                // With loop=1 the player auto-restarts; we only care when promoted
+                if (typeof state.yt.preload.endCallback === 'function') state.yt.preload.endCallback();
               }
             },
             onError: () => {
@@ -1684,39 +1682,38 @@
             state.yt.player = null;
           }
 
-          function fallbackIframe() {
-            try {
-              container.innerHTML = '';
-              const iframe = document.createElement('iframe');
-              iframe.style.cssText = 'width:100vw;height:100vh;border:none;display:block;';
-              iframe.allow = 'autoplay; encrypted-media; fullscreen';
-              iframe.allowFullscreen = true;
-              iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1`;
-              container.appendChild(iframe);
-            } catch(e) {}
+          // Build iframe manually so allow="autoplay" is set before it loads.
+          // The YT API (when it creates the iframe itself) may omit this attribute, breaking iOS autoplay.
+          function makeIframe() {
+            container.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;';
+            iframe.allow = 'autoplay; encrypted-media; fullscreen; picture-in-picture';
+            iframe.allowFullscreen = true;
+            const origin = encodeURIComponent(location.origin);
+            iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=${origin}`;
+            container.appendChild(iframe);
+            return iframe;
           }
 
           ensureYouTubeApi().then(() => {
-            if (!window.YT || !window.YT.Player) { fallbackIframe(); return; }
             try {
-              state.yt.player = new window.YT.Player('playerContainer', {
-                videoId: cleanId,
-                width: '100%',
-                height: '100%',
-                playerVars: { autoplay: 1, mute: 1, controls: 0, rel: 0, modestbranding: 1, playsinline: 1, fs: 1 },
+              const iframe = makeIframe();
+              if (!window.YT || !window.YT.Player) return; // iframe still plays; timeout will close it
+              // Attach YT API to the already-created iframe for end-detection
+              state.yt.player = new window.YT.Player(iframe, {
                 events: {
-                  onReady: (event) => { try { event.target.playVideo(); } catch(e) {} },
                   onStateChange: (event) => {
                     if (event.data === window.YT.PlayerState.ENDED) done();
                     if (event.data === window.YT.PlayerState.PLAYING) {
                       try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
                     }
                   },
-                  onError: () => fallbackIframe(),
+                  onError: () => {}, // iframe already showing; let timeout handle it
                 },
               });
-            } catch(e) { fallbackIframe(); }
-          }).catch(() => fallbackIframe());
+            } catch(e) { makeIframe(); }
+          }).catch(() => makeIframe());
         }
       });
     }
