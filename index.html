@@ -900,7 +900,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v15';
+    const VERSION = 'v16';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -1586,6 +1586,9 @@
           state.yt.doneCallback = null;
           if (el.videoSkipButton) el.videoSkipButton.classList.remove('show');
           el.videoOverlay.classList.remove('show');
+          if (state.yt.player) {
+            try { state.yt.player.pauseVideo(); } catch (e) {}
+          }
           if (!usedPrewarmed && state.yt.player) {
             try { state.yt.player.destroy(); } catch(e) {}
             state.yt.player = null;
