@@ -48,7 +48,7 @@
       position: relative;
       width: 100%;
       display: grid;
-      grid-template-rows: auto 1fr auto;
+      grid-template-rows: auto 1fr;
       gap: 1rem;
       padding: 1rem;
       box-sizing: border-box;
@@ -550,16 +550,16 @@
     /* Hold-to-replay intro button */
     .replay-intro-btn {
       position: fixed;
-      bottom: 0.6rem;
+      top: 0.6rem;
       left: 0.6rem;
       z-index: 5;
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 5px;
-      color: rgba(255,255,255,0.3);
-      font-size: 0.6rem;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.55);
+      font-size: 1rem;
       font-family: inherit;
-      padding: 0.35rem 0.7rem;
+      padding: 0.55rem 1.1rem;
       cursor: pointer;
       overflow: hidden;
       -webkit-user-select: none;
@@ -879,7 +879,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v7';
+    const VERSION = 'v8';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -1557,8 +1557,13 @@
                 if (typeof state.yt.preload.endCallback === 'function') {
                   state.yt.preload.endCallback();
                 } else {
-                  // Still off-screen — loop so it's always playing-ready when promoted
-                  try { event.target.seekTo(0, true); event.target.playVideo(); } catch(e) {}
+                  // Still off-screen — recreate the player so it autoplays fresh via src URL.
+                  // Do NOT call playVideo() here: iOS blocks JS-triggered play outside user gesture.
+                  const oldId = state.yt.preload.videoId;
+                  try { event.target.destroy(); } catch(e) {}
+                  state.yt.preload.player = null;
+                  state.yt.preload.videoId = null;
+                  preloadVideo(oldId);
                 }
               }
             },
@@ -1596,7 +1601,14 @@
         el.videoSkipButton.onclick = null;
       }
 
-      const usingPreload = !!(state.yt.preload.player && state.yt.preload.videoId === cleanId);
+      // Only use the preload if it's actually playing — iOS may have blocked JS-triggered resumption
+      let usingPreload = false;
+      if (state.yt.preload.player && state.yt.preload.videoId === cleanId) {
+        try {
+          const ps = state.yt.preload.player.getPlayerState();
+          usingPreload = (ps === window.YT.PlayerState.PLAYING || ps === window.YT.PlayerState.BUFFERING);
+        } catch(e) {}
+      }
 
       return new Promise((resolve) => {
         let resolved = false;
@@ -1649,10 +1661,9 @@
           // Promote preload slot: expand to full-screen above the overlay
           const slot = document.getElementById('preloadSlot');
           if (slot) slot.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;z-index:25;';
-          // Seek to beginning (video may have been playing for a while off-screen), then unmute
+          // Video is already playing muted — just unmute it.
+          // Do NOT call seekTo/playVideo: iOS blocks JS-triggered play outside user gesture.
           try {
-            state.yt.preload.player.seekTo(0, true);
-            state.yt.preload.player.playVideo();
             state.yt.preload.player.unMute();
             state.yt.preload.player.setVolume(100);
           } catch(e) {}
