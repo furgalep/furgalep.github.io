@@ -900,7 +900,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v11';
+    const VERSION = 'v12';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -1520,6 +1520,7 @@
     }
 
     // YouTube — Play a video fullscreen, resolve promise when it ends (or times out)
+    // iframe is created SYNCHRONOUSLY so iOS keeps the user-gesture context for autoplay
     function playPenaltyVideo(videoId, showSkip = false) {
       if (!videoId || videoId.trim() === '') return Promise.resolve();
       const cleanId = extractVideoId(videoId);
@@ -1537,19 +1538,19 @@
       return new Promise((resolve) => {
         let resolved = false;
         let timeoutId = null;
+        let msgListener = null;
+        let iframeEl = null;
 
         function done() {
           if (resolved) return;
           resolved = true;
           clearTimeout(timeoutId);
+          if (msgListener) { window.removeEventListener('message', msgListener); msgListener = null; }
           if (el.videoSkipButton) el.videoSkipButton.classList.remove('show');
           el.videoOverlay.classList.remove('show');
-          if (state.yt.player) {
-            try { state.yt.player.destroy(); } catch(e) {}
-            state.yt.player = null;
-          }
           const container = document.getElementById('playerContainer');
           if (container) container.innerHTML = '';
+          iframeEl = null;
           glitchPulse(1200);
           resolve();
         }
@@ -1564,41 +1565,28 @@
         const container = document.getElementById('playerContainer');
         if (!container) { el.videoOverlay.classList.remove('show'); resolve(); return; }
         container.innerHTML = '';
-        if (state.yt.player) {
-          try { state.yt.player.destroy(); } catch(e) {}
-          state.yt.player = null;
-        }
 
-        // Use YT IFrame API to create the iframe — it sets allow="autoplay" correctly
-        ensureYouTubeApi().then(() => {
-          if (resolved) return;
-          if (!window.YT || !window.YT.Player) return; // let timeout handle it
-          const playerDiv = document.createElement('div');
-          container.appendChild(playerDiv);
-          state.yt.player = new window.YT.Player(playerDiv, {
-            videoId: cleanId,
-            playerVars: {
-              autoplay: 1,
-              mute: 1,
-              controls: 0,
-              rel: 0,
-              modestbranding: 1,
-              playsinline: 1,
-            },
-            events: {
-              onReady: (event) => {
-                try { event.target.playVideo(); event.target.unMute(); event.target.setVolume(100); } catch(e) {}
-              },
-              onStateChange: (event) => {
-                if (event.data === window.YT.PlayerState.PLAYING) {
-                  try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
-                }
-                if (event.data === window.YT.PlayerState.ENDED) done();
-              },
-              onError: () => { setTimeout(() => { if (!resolved) done(); }, 2000); },
-            },
-          });
-        }).catch(() => {});
+        // Create iframe SYNCHRONOUSLY — preserves iOS user-gesture context for autoplay
+        const origin = encodeURIComponent(location.origin);
+        const iframe = document.createElement('iframe');
+        iframeEl = iframe;
+        iframe.src = `https://www.youtube.com/embed/${cleanId}?autoplay=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=${origin}`;
+        iframe.setAttribute('allow', 'autoplay; encrypted-media; fullscreen; picture-in-picture');
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.style.cssText = 'width:100%;height:100%;border:0;display:block;';
+        container.appendChild(iframe);
+
+        // Detect video end via YouTube's postMessage protocol
+        msgListener = function(event) {
+          if (!iframeEl || event.source !== iframeEl.contentWindow) return;
+          try {
+            const data = JSON.parse(event.data);
+            if (data.event === 'onStateChange') {
+              if (data.info === 0) done(); // 0 = ENDED
+            }
+          } catch(e) {}
+        };
+        window.addEventListener('message', msgListener);
       });
     }
 
