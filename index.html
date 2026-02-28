@@ -540,6 +540,13 @@
       text-shadow: 0 4px 12px rgba(0,0,0,0.8);
       animation: pulse 2s ease-in-out infinite;
     }
+    .version-tag {
+      font-size: 0.4em;
+      opacity: 0.45;
+      font-weight: normal;
+      vertical-align: middle;
+      letter-spacing: 0.05em;
+    }
     .intro-screen p {
       font-size: clamp(1rem, 3vw, 1.5rem);
       color: var(--dim);
@@ -725,7 +732,6 @@
         <button class="key" data-key="0">0</button>
         <button class="key" data-key="#">#</button>
       </section>
-      <footer class="footer">v5</footer>
     </div>
   </div>
 
@@ -735,8 +741,9 @@
 
   <div class="overlay" id="videoOverlay" aria-hidden="true">
     <div id="playerContainer"></div>
-    <button id="videoSkipButton" class="video-skip-button" aria-label="Skip video">Skip</button>
   </div>
+  <!-- Skip button lives outside all overlays so position:fixed z-index works on iOS -->
+  <button id="videoSkipButton" class="video-skip-button" aria-label="Skip video">Skip</button>
 
   <!-- Off-screen preload slot: always in render tree so iframe can buffer, hidden via position -->
   <div id="preloadSlot"></div>
@@ -749,7 +756,6 @@
     <div class="intro-screen">
       <h1 id="introTitle">Click to Start</h1>
       <p id="introSubtitle">Tap anywhere to begin</p>
-      <p style="position:absolute;bottom:1rem;right:1.5rem;font-size:0.7rem;opacity:0.4;margin:0;">v5</p>
     </div>
   </div>
 
@@ -831,6 +837,7 @@
 
   <script>
     // Settings and state
+    const VERSION = 'v6';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -1306,8 +1313,8 @@
       el.status.textContent = text || '';
     }
     function setTitle(text) {
-      el.title.textContent = text || '';
-      document.title = text || 'Bomb Defusal';
+      el.title.innerHTML = (text || '') + ' <span class="version-tag">' + VERSION + '</span>';
+      document.title = text || 'Gigasprudel 3000';
     }
     function setGameOverText(text) {
       el.gameOverText.textContent = text || 'FAILED';
@@ -1983,7 +1990,7 @@
       // Show intro overlay and wait for click
       const introTitleEl = document.getElementById('introTitle');
       if (introTitleEl) {
-        introTitleEl.textContent = state.settings.messages.title || 'Click to Start';
+        introTitleEl.innerHTML = (state.settings.messages.title || 'Click to Start') + ' <span class="version-tag">' + VERSION + '</span>';
       }
       el.introOverlay.classList.add('show');
       // Use touchend for reliable iOS tap; preventDefault stops the subsequent click from double-firing
