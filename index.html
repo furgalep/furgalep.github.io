@@ -592,6 +592,13 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.6; }
     }
+    @keyframes redPulse {
+      0%, 100% { background: rgba(0, 0, 0, 0.9); }
+      50% { background: rgba(140, 0, 0, 0.93); }
+    }
+    #newMsgOverlay.show {
+      animation: redPulse 1s ease-in-out infinite;
+    }
     /* Fullscreen YouTube player container */
     #playerContainer {
       width: 100vw;
@@ -893,7 +900,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v10';
+    const VERSION = 'v11';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -1580,7 +1587,7 @@
             },
             events: {
               onReady: (event) => {
-                try { event.target.unMute(); event.target.setVolume(100); } catch(e) {}
+                try { event.target.playVideo(); event.target.unMute(); event.target.setVolume(100); } catch(e) {}
               },
               onStateChange: (event) => {
                 if (event.data === window.YT.PlayerState.PLAYING) {
