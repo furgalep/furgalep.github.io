@@ -900,7 +900,7 @@
 
   <script>
     // Settings and state
-    const VERSION = 'v13';
+    const VERSION = 'v14';
     const STORAGE_KEY = 'tablet-puzzle-settings-v1';
     const DEFAULTS = {
       initialSeconds: 20 * 60, // 20 minutes
@@ -979,8 +979,10 @@
       yt: {
         apiReady: false,
         player: null,
+        playerReady: false,
         readyResolve: null,
         readyPromise: null,
+        doneCallback: null,
       },
       adminHold: {
         starDown: false,
@@ -1481,6 +1483,43 @@
       }
       return state.yt.readyPromise;
     }
+    // Pre-warm a YT player so loadVideoById + playVideo + unMute can run synchronously
+    // in the user gesture handler (required for iOS autoplay).
+    function prewarmYouTubePlayer() {
+      const container = document.getElementById('playerContainer');
+      if (!container || !window.YT || !window.YT.Player || state.yt.player) return;
+      const playerDiv = document.createElement('div');
+      container.appendChild(playerDiv);
+      state.yt.player = new window.YT.Player(playerDiv, {
+        videoId: 'dQw4w9WgXcQ',
+        playerVars: {
+          autoplay: 0,
+          mute: 1,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          playsinline: 1,
+        },
+        events: {
+          onReady: () => { state.yt.playerReady = true; },
+          onStateChange: (event) => {
+            if (event.data === window.YT.PlayerState.ENDED && state.yt.doneCallback) {
+              const cb = state.yt.doneCallback;
+              state.yt.doneCallback = null;
+              cb();
+            }
+          },
+          onError: () => {
+            if (state.yt.doneCallback) {
+              const cb = state.yt.doneCallback;
+              state.yt.doneCallback = null;
+              setTimeout(cb, 2000);
+            }
+          },
+        },
+      });
+    }
+
     // Extract a bare YouTube video ID from any URL/ID format
     function extractVideoId(videoId) {
       if (!videoId || videoId.trim() === '') return '';
@@ -1520,6 +1559,7 @@
     }
 
     // YouTube — Play a video fullscreen, resolve promise when it ends (or times out)
+    // iOS: pre-warmed player + loadVideoById/playVideo/unMute called synchronously in gesture handler
     function playPenaltyVideo(videoId, showSkip = false) {
       if (!videoId || videoId.trim() === '') return Promise.resolve();
       const cleanId = extractVideoId(videoId);
@@ -1537,19 +1577,22 @@
       return new Promise((resolve) => {
         let resolved = false;
         let timeoutId = null;
+        let usedPrewarmed = false;
 
         function done() {
           if (resolved) return;
           resolved = true;
           clearTimeout(timeoutId);
+          state.yt.doneCallback = null;
           if (el.videoSkipButton) el.videoSkipButton.classList.remove('show');
           el.videoOverlay.classList.remove('show');
-          if (state.yt.player) {
+          if (!usedPrewarmed && state.yt.player) {
             try { state.yt.player.destroy(); } catch(e) {}
             state.yt.player = null;
+            state.yt.playerReady = false;
+            const container = document.getElementById('playerContainer');
+            if (container) container.innerHTML = '';
           }
-          const container = document.getElementById('playerContainer');
-          if (container) container.innerHTML = '';
           glitchPulse(1200);
           resolve();
         }
@@ -1563,13 +1606,32 @@
 
         const container = document.getElementById('playerContainer');
         if (!container) { el.videoOverlay.classList.remove('show'); resolve(); return; }
+
+        // iOS path: pre-warmed player — call loadVideoById + playVideo + unMute synchronously
+        // (must run in same call stack as user tap, before any async boundary)
+        if (state.yt.player && state.yt.playerReady) {
+          usedPrewarmed = true;
+          state.yt.doneCallback = done;
+          try {
+            state.yt.player.loadVideoById(cleanId);
+            state.yt.player.unMute();
+            state.yt.player.setVolume(100);
+            state.yt.player.playVideo();
+          } catch (e) {
+            state.yt.doneCallback = null;
+            done();
+          }
+          return;
+        }
+
+        // Fallback: create player async (may not autoplay on iOS)
         container.innerHTML = '';
         if (state.yt.player) {
           try { state.yt.player.destroy(); } catch(e) {}
           state.yt.player = null;
+          state.yt.playerReady = false;
         }
 
-        // Use YT IFrame API — it sets allow="autoplay" and handles muted autoplay correctly
         ensureYouTubeApi().then(() => {
           if (resolved) return;
           if (!window.YT || !window.YT.Player) return;
@@ -1903,8 +1965,8 @@
       state.originalSeconds = state.settings.initialSeconds;
       state.remainingSeconds = state.settings.initialSeconds;
       state.timeouts = 0;
-      // Pre-warm the YouTube API so it's ready when user taps
-      ensureYouTubeApi();
+      // Pre-warm the YouTube API and player so loadVideoById+playVideo run in gesture context (iOS)
+      ensureYouTubeApi().then(() => prewarmYouTubePlayer());
       ensureGlitchCanvas();
       window.addEventListener('resize', ensureGlitchCanvas);
       setTitle(state.settings.messages.title);
